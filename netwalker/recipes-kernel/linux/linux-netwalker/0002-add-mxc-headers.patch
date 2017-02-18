@@ -1,0 +1,2374 @@
+diff --git a/include/linux/mxc_dcic.h b/include/linux/mxc_dcic.h
+new file mode 100644
+index 0000000..8e330bd
+--- /dev/null
++++ b/include/linux/mxc_dcic.h
+@@ -0,0 +1,126 @@
++/*
++ * Copyright (C) 2014-2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++/*!
++ * @file linux/mxc_dcic.h
++ *
++ * @brief Global header file for the MXC DCIC driver
++ *
++ * @ingroup MXC DCIC
++ */
++
++#ifndef __LINUX_DCIC_H__
++#define __LINUX_DCIC_H__
++
++#include <uapi/linux/mxc_dcic.h>
++
++#define DCICC_IC_ENABLE					0x1
++#define DCICC_IC_DISABLE				0x0
++#define DCICC_IC_MASK					0x1
++#define DCICC_DE_ACTIVE_HIGH			0
++#define DCICC_DE_ACTIVE_LOW				(0x1 << 4)
++#define DCICC_DE_ACTIVE_MASK			(0x1 << 4)
++#define DCICC_HSYNC_POL_ACTIVE_HIGH		0
++#define DCICC_HSYNC_POL_ACTIVE_LOW		(0x1 << 5)
++#define DCICC_HSYNC_POL_ACTIVE_MASK		(0x1 << 5)
++#define DCICC_VSYNC_POL_ACTIVE_HIGH		0
++#define DCICC_VSYNC_POL_ACTIVE_LOW		(0x1 << 6)
++#define DCICC_VSYNC_POL_ACTIVE_MASK		(0x1 << 6)
++#define DCICC_CLK_POL_NO_INVERTED		0
++#define DCICC_CLK_POL_INVERTED			(0x1 << 7)
++#define DCICC_CLK_POL_INVERTED_MASK		(0x1 << 7)
++
++#define DCICIC_ERROR_INT_DISABLE		1
++#define DCICIC_ERROR_INT_ENABLE			0
++#define DCICIC_ERROR_INT_MASK_MASK		1
++#define DCICIC_FUN_INT_DISABLE			(0x1 << 1)
++#define DCICIC_FUN_INT_ENABLE			0
++#define DCICIC_FUN_INT_MASK				(0x1 << 1)
++#define DCICIC_FREEZE_MASK_CHANGED		0
++#define DCICIC_FREEZE_MASK_FORZEN		(0x1 << 3)
++#define DCICIC_FREEZE_MASK_MASK			(0x1 << 3)
++#define DCICIC_EXT_SIG_EX_DISABLE		0
++#define DCICIC_EXT_SIG_EN_ENABLE		(0x1 << 16)
++#define DCICIC_EXT_SIG_EN_MASK			(0x1 << 16)
++
++#define DCICS_ROI_MATCH_STAT_MASK		0xFFFF
++#define DCICS_EI_STAT_PENDING			(0x1 << 16)
++#define DCICS_EI_STAT_NO_PENDING		0
++#define DCICS_FI_STAT_PENDING			(0x1 << 17)
++#define DCICS_FI_STAT_NO_PENDING		0
++
++#define DCICRC_ROI_START_OFFSET_X_MASK	0x1FFF
++#define DCICRC_ROI_START_OFFSET_X_SHIFT	0
++#define DCICRC_ROI_START_OFFSET_Y_MASK	(0xFFF << 16)
++#define DCICRC_ROI_START_OFFSET_Y_SHIFT	16
++#define DCICRC_ROI_CHANGED				0
++#define DCICRC_ROI_FROZEN				(0x1 << 30)
++#define DCICRC_ROI_ENABLE				(0x1 << 31)
++#define DCICRC_ROI_DISABLE				0
++
++#define DCICRS_ROI_END_OFFSET_X_MASK	0x1FFF
++#define DCICRS_ROI_END_OFFSET_X_SHIFT	0
++#define DCICRS_ROI_END_OFFSET_Y_MASK	(0xFFF << 16)
++#define DCICRS_ROI_END_OFFSET_Y_SHIFT	16
++
++struct roi_regs {
++	u32 dcicrc;
++	u32 dcicrs;
++	u32 dcicrrs;
++	u32 dcicrcs;
++};
++
++struct dcic_regs {
++	u32 dcicc;
++	u32 dcicic;
++	u32 dcics;
++	u32 dcic_reserved;
++	struct roi_regs ROI[16];
++};
++
++struct dcic_mux {
++	char dcic[16];
++	u32 val;
++};
++
++struct bus_mux {
++	char name[16];
++	int reg;
++	int shift;
++	int mask;
++	int dcic_mux_num;
++	const struct dcic_mux *dcics;
++};
++
++struct dcic_info {
++	int bus_mux_num;
++	const struct bus_mux *buses;
++};
++
++struct dcic_data {
++	struct regmap *regmap;
++	struct device *dev;
++	struct dcic_regs *regs;
++	const struct bus_mux *buses;
++	u32 bus_n;
++	u32 mux_n;
++	struct clk *disp_axi_clk;
++	struct clk *dcic_clk;
++	struct mutex lock;
++	struct completion roi_crc_comp;
++	struct class *class;
++	int major;
++	struct cdev cdev;	/* Char device structure */
++	dev_t devt;
++	unsigned int result;
++};
++#endif
+diff --git a/include/linux/mxc_mlb.h b/include/linux/mxc_mlb.h
+new file mode 100644
+index 0000000..d7c792a
+--- /dev/null
++++ b/include/linux/mxc_mlb.h
+@@ -0,0 +1,55 @@
++/*
++ * mxc_mlb.h
++ *
++ * Copyright 2008-2013 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#ifndef _MXC_MLB_H
++#define _MXC_MLB_H
++
++/* define IOCTL command */
++#define MLB_DBG_RUNTIME		_IO('S', 0x09)
++#define MLB_SET_FPS		_IOW('S', 0x10, unsigned int)
++#define MLB_GET_VER		_IOR('S', 0x11, unsigned long)
++#define MLB_SET_DEVADDR		_IOR('S', 0x12, unsigned char)
++
++/*!
++ * set channel address for each logical channel
++ * the MSB 16bits is for tx channel, the left LSB is for rx channel
++ */
++#define MLB_CHAN_SETADDR	_IOW('S', 0x13, unsigned int)
++#define MLB_CHAN_STARTUP	_IO('S', 0x14)
++#define MLB_CHAN_SHUTDOWN	_IO('S', 0x15)
++#define MLB_CHAN_GETEVENT	_IOR('S', 0x16, unsigned long)
++
++#define MLB_SET_ISOC_BLKSIZE_188 _IO('S', 0x17)
++#define MLB_SET_ISOC_BLKSIZE_196 _IO('S', 0x18)
++#define MLB_SET_SYNC_QUAD	_IOW('S', 0x19, unsigned int)
++#define MLB_IRQ_ENABLE		_IO('S', 0x20)
++#define MLB_IRQ_DISABLE		_IO('S', 0x21)
++
++/*!
++ * MLB event define
++ */
++enum {
++	MLB_EVT_TX_PROTO_ERR_CUR = 1 << 0,
++	MLB_EVT_TX_BRK_DETECT_CUR = 1 << 1,
++	MLB_EVT_TX_PROTO_ERR_PREV = 1 << 8,
++	MLB_EVT_TX_BRK_DETECT_PREV = 1 << 9,
++	MLB_EVT_RX_PROTO_ERR_CUR = 1 << 16,
++	MLB_EVT_RX_BRK_DETECT_CUR = 1 << 17,
++	MLB_EVT_RX_PROTO_ERR_PREV = 1 << 24,
++	MLB_EVT_RX_BRK_DETECT_PREV = 1 << 25,
++};
++
++
++#endif				/* _MXC_MLB_H */
+diff --git a/include/linux/mxc_sim_interface.h b/include/linux/mxc_sim_interface.h
+new file mode 100644
+index 0000000..5eae53a
+--- /dev/null
++++ b/include/linux/mxc_sim_interface.h
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (C) 2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++#ifndef MXC_SIM_INTERFACE_H
++#define MXC_SIM_INTERFACE_H
++
++#define SIM_ATR_LENGTH_MAX 32
++
++/* Raw ATR SIM_IOCTL_GET_ATR */
++typedef struct {
++	unsigned int size;/* length of ATR received */
++	unsigned char *atr_buffer;/* raw ATR string received */
++	int errval;/* The error vale reported to user space after completing ATR*/
++} sim_atr_t;
++
++/* ISO7816-3 protocols */
++#define SIM_PROTOCOL_T0  1
++#define SIM_PROTOCOL_T1  2
++
++/* Transfer types for SIM_IOCTL_XFER */
++#define SIM_XFER_TYPE_TPDU 1
++#define SIM_XFER_TYPE_PTS  2
++
++typedef struct {
++	unsigned int wwt;
++	unsigned int cwt;
++	unsigned int bwt;
++	unsigned int bgt;
++	unsigned int cgt;
++} sim_timing_t;
++
++/* Transfer data for SIM_IOCTL_XFER */
++typedef struct {
++	unsigned char *xmt_buffer;	/* transmit buffer pointer */
++	int xmt_length;/* transmit buffer length */
++	int timeout;/* transfer timeout in milliseconds */
++	int errval;/* The error vale reported to user space after completing transmitting*/
++} sim_xmt_t;
++
++typedef struct {
++	unsigned char *rcv_buffer;	/* receive buffer pointer */
++	int rcv_length;	/* receive buffer length */
++	int timeout;/* transfer timeout in milliseconds */
++	int errval;/* The error vale reported to user space after receiving*/
++} sim_rcv_t;
++
++typedef struct {
++	unsigned char di;
++	unsigned char fi;
++} sim_baud_t;
++
++/* Interface power states */
++#define SIM_POWER_OFF			(0)
++#define SIM_POWER_ON			(1)
++
++/* Return values for SIM_IOCTL_GET_PRESENSE */
++#define SIM_PRESENT_REMOVED		(0)
++#define SIM_PRESENT_DETECTED		(1)
++#define SIM_PRESENT_OPERATIONAL		(2)
++
++/* The error value */
++#define SIM_OK				(0)
++#define SIM_ERROR_CWT			(1 << 0)
++#define SIM_ERROR_BWT			(1 << 1)
++#define SIM_ERROR_PARITY		(1 << 2)
++#define SIM_ERROR_INVALID_TS		(1 << 3)
++#define SIM_ERROR_FRAME			(1 << 4)
++#define SIM_ERROR_ATR_TIMEROUT		(1 << 5)
++#define SIM_ERROR_NACK_THRESHOLD	(1 << 6)
++#define SIM_ERROR_BGT			(1 << 7)
++#define SIM_ERROR_ATR_DELAY		(1 << 8)
++
++/* Return values for SIM_IOCTL_GET_ERROR */
++#define SIM_E_ACCESS			(1)
++#define SIM_E_TPDUSHORT			(2)
++#define SIM_E_PTSEMPTY			(3)
++#define SIM_E_INVALIDXFERTYPE		(4)
++#define SIM_E_INVALIDXMTLENGTH		(5)
++#define SIM_E_INVALIDRCVLENGTH		(6)
++#define SIM_E_NACK			(7)
++#define SIM_E_TIMEOUT			(8)
++#define SIM_E_NOCARD			(9)
++#define SIM_E_PARAM_FI_INVALID		(10)
++#define SIM_E_PARAM_DI_INVALID		(11)
++#define SIM_E_PARAM_FBYD_WITHFRACTION	(12)
++#define SIM_E_PARAM_FBYD_NOTDIVBY8OR12	(13)
++#define SIM_E_PARAM_DIVISOR_RANGE	(14)
++#define SIM_E_MALLOC			(15)
++#define SIM_E_IRQ			(16)
++#define SIM_E_POWERED_ON		(17)
++#define SIM_E_POWERED_OFF		(18)
++
++/* ioctl encodings */
++#define SIM_IOCTL_BASE			(0xc0)
++#define SIM_IOCTL_GET_PRESENSE		_IOR(SIM_IOCTL_BASE, 1, int)
++#define SIM_IOCTL_GET_ATR		_IOR(SIM_IOCTL_BASE, 2, sim_atr_t)
++#define SIM_IOCTL_XMT			_IOR(SIM_IOCTL_BASE, 3, sim_xmt_t)
++#define SIM_IOCTL_RCV			_IOR(SIM_IOCTL_BASE, 4, sim_rcv_t)
++#define SIM_IOCTL_ACTIVATE		_IO(SIM_IOCTL_BASE, 5)
++#define SIM_IOCTL_DEACTIVATE		_IO(SIM_IOCTL_BASE, 6)
++#define SIM_IOCTL_WARM_RESET		_IO(SIM_IOCTL_BASE, 7)
++#define SIM_IOCTL_COLD_RESET		_IO(SIM_IOCTL_BASE, 8)
++#define SIM_IOCTL_CARD_LOCK		_IO(SIM_IOCTL_BASE, 9)
++#define SIM_IOCTL_CARD_EJECT		_IO(SIM_IOCTL_BASE, 10)
++#define SIM_IOCTL_SET_PROTOCOL		_IOR(SIM_IOCTL_BASE, 11, unsigned int)
++#define SIM_IOCTL_SET_TIMING		_IOR(SIM_IOCTL_BASE, 12, sim_timing_t)
++#define SIM_IOCTL_SET_BAUD		_IOR(SIM_IOCTL_BASE, 13, sim_baud_t)
++#define SIM_IOCTL_WAIT			_IOR(SIM_IOCTL_BASE, 14, unsigned int)
++
++#endif
+diff --git a/include/linux/mxc_v4l2.h b/include/linux/mxc_v4l2.h
+new file mode 100644
+index 0000000..6d778e8
+--- /dev/null
++++ b/include/linux/mxc_v4l2.h
+@@ -0,0 +1,27 @@
++/*
++ * Copyright 2004-2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU Lesser General
++ * Public License.  You may obtain a copy of the GNU Lesser General
++ * Public License Version 2.1 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/lgpl-license.html
++ * http://www.gnu.org/copyleft/lgpl.html
++ */
++
++/*!
++ * @file linux/mxc_v4l2.h
++ *
++ * @brief MXC V4L2 private header file
++ *
++ * @ingroup MXC V4L2
++ */
++
++#ifndef __LINUX_MXC_V4L2_H__
++#define __LINUX_MXC_V4L2_H__
++
++#include <uapi/linux/mxc_v4l2.h>
++
++#endif
+diff --git a/include/linux/mxc_vpu.h b/include/linux/mxc_vpu.h
+new file mode 100644
+index 0000000..df02469
+--- /dev/null
++++ b/include/linux/mxc_vpu.h
+@@ -0,0 +1,118 @@
++/*
++ * Copyright 2004-2013, 2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU Lesser General
++ * Public License.  You may obtain a copy of the GNU Lesser General
++ * Public License Version 2.1 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/lgpl-license.html
++ * http://www.gnu.org/copyleft/lgpl.html
++ */
++
++/*!
++ * @defgroup VPU Video Processor Unit Driver
++ */
++
++/*!
++ * @file linux/mxc_vpu.h
++ *
++ * @brief VPU system initialization and file operation definition
++ *
++ * @ingroup VPU
++ */
++
++#ifndef __LINUX_MXC_VPU_H__
++#define __LINUX_MXC_VPU_H__
++
++#include <linux/fs.h>
++
++struct mxc_vpu_platform_data {
++	bool iram_enable;
++	int  iram_size;
++	void (*reset) (void);
++	void (*pg) (int);
++};
++
++struct vpu_mem_desc {
++	u32 size;
++	dma_addr_t phy_addr;
++	u32 cpu_addr;		/* cpu address to free the dma mem */
++	u32 virt_uaddr;		/* virtual user space address */
++};
++
++#define VPU_IOC_MAGIC  'V'
++
++#define VPU_IOC_PHYMEM_ALLOC	_IO(VPU_IOC_MAGIC, 0)
++#define VPU_IOC_PHYMEM_FREE	_IO(VPU_IOC_MAGIC, 1)
++#define VPU_IOC_WAIT4INT	_IO(VPU_IOC_MAGIC, 2)
++#define VPU_IOC_PHYMEM_DUMP	_IO(VPU_IOC_MAGIC, 3)
++#define VPU_IOC_REG_DUMP	_IO(VPU_IOC_MAGIC, 4)
++#define VPU_IOC_IRAM_SETTING	_IO(VPU_IOC_MAGIC, 6)
++#define VPU_IOC_CLKGATE_SETTING	_IO(VPU_IOC_MAGIC, 7)
++#define VPU_IOC_GET_WORK_ADDR   _IO(VPU_IOC_MAGIC, 8)
++#define VPU_IOC_REQ_VSHARE_MEM	_IO(VPU_IOC_MAGIC, 9)
++#define VPU_IOC_SYS_SW_RESET	_IO(VPU_IOC_MAGIC, 11)
++#define VPU_IOC_GET_SHARE_MEM   _IO(VPU_IOC_MAGIC, 12)
++#define VPU_IOC_QUERY_BITWORK_MEM  _IO(VPU_IOC_MAGIC, 13)
++#define VPU_IOC_SET_BITWORK_MEM    _IO(VPU_IOC_MAGIC, 14)
++#define VPU_IOC_PHYMEM_CHECK	_IO(VPU_IOC_MAGIC, 15)
++#define VPU_IOC_LOCK_DEV	_IO(VPU_IOC_MAGIC, 16)
++
++#define BIT_CODE_RUN			0x000
++#define BIT_CODE_DOWN			0x004
++#define BIT_INT_CLEAR			0x00C
++#define BIT_INT_STATUS			0x010
++#define BIT_CUR_PC			0x018
++#define BIT_INT_REASON			0x174
++
++#define MJPEG_PIC_STATUS_REG		0x3004
++#define MBC_SET_SUBBLK_EN		0x4A0
++
++#define BIT_WORK_CTRL_BUF_BASE		0x100
++#define BIT_WORK_CTRL_BUF_REG(i)	(BIT_WORK_CTRL_BUF_BASE + i * 4)
++#define BIT_CODE_BUF_ADDR		BIT_WORK_CTRL_BUF_REG(0)
++#define BIT_WORK_BUF_ADDR		BIT_WORK_CTRL_BUF_REG(1)
++#define BIT_PARA_BUF_ADDR		BIT_WORK_CTRL_BUF_REG(2)
++#define BIT_BIT_STREAM_CTRL		BIT_WORK_CTRL_BUF_REG(3)
++#define BIT_FRAME_MEM_CTRL		BIT_WORK_CTRL_BUF_REG(4)
++#define BIT_BIT_STREAM_PARAM		BIT_WORK_CTRL_BUF_REG(5)
++
++#ifndef CONFIG_SOC_IMX6Q
++#define BIT_RESET_CTRL			0x11C
++#else
++#define BIT_RESET_CTRL			0x128
++#endif
++
++/* i could be 0, 1, 2, 3 */
++#define	BIT_RD_PTR_BASE			0x120
++#define BIT_RD_PTR_REG(i)		(BIT_RD_PTR_BASE + i * 8)
++#define BIT_WR_PTR_REG(i)		(BIT_RD_PTR_BASE + i * 8 + 4)
++
++/* i could be 0, 1, 2, 3 */
++#define BIT_FRM_DIS_FLG_BASE		(cpu_is_mx51() ? 0x150 : 0x140)
++#define	BIT_FRM_DIS_FLG_REG(i)		(BIT_FRM_DIS_FLG_BASE + i * 4)
++
++#define BIT_BUSY_FLAG			0x160
++#define BIT_RUN_COMMAND			0x164
++#define BIT_INT_ENABLE			0x170
++
++#define	BITVAL_PIC_RUN			8
++
++#define	VPU_SLEEP_REG_VALUE		10
++#define	VPU_WAKE_REG_VALUE		11
++
++int vl2cc_init(u32 vl2cc_hw_base);
++void vl2cc_enable(void);
++void vl2cc_flush(void);
++void vl2cc_disable(void);
++void vl2cc_cleanup(void);
++
++int vl2cc_init(u32 vl2cc_hw_base);
++void vl2cc_enable(void);
++void vl2cc_flush(void);
++void vl2cc_disable(void);
++void vl2cc_cleanup(void);
++
++#endif
+diff --git a/include/linux/mxcfb.h b/include/linux/mxcfb.h
+new file mode 100644
+index 0000000..67db5ee
+--- /dev/null
++++ b/include/linux/mxcfb.h
+@@ -0,0 +1,46 @@
++/*
++ * Copyright 2004-2013 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU Lesser General
++ * Public License.  You may obtain a copy of the GNU Lesser General
++ * Public License Version 2.1 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/lgpl-license.html
++ * http://www.gnu.org/copyleft/lgpl.html
++ */
++
++/*
++ * @file linux/mxcfb.h
++ *
++ * @brief Global header file for the MXC Frame buffer
++ *
++ * @ingroup Framebuffer
++ */
++#ifndef __LINUX_MXCFB_H__
++#define __LINUX_MXCFB_H__
++
++#include <uapi/linux/mxcfb.h>
++
++extern struct fb_videomode mxcfb_modedb[];
++extern int mxcfb_modedb_sz;
++
++enum {
++	MXC_DISP_SPEC_DEV = 0,
++	MXC_DISP_DDC_DEV = 1,
++};
++
++enum {
++	MXCFB_REFRESH_OFF,
++	MXCFB_REFRESH_AUTO,
++	MXCFB_REFRESH_PARTIAL,
++};
++
++int mxcfb_set_refresh_mode(struct fb_info *fbi, int mode,
++			   struct mxcfb_rect *update_region);
++int mxc_elcdif_frame_addr_setup(dma_addr_t phys);
++void mxcfb_elcdif_register_mode(const struct fb_videomode *modedb,
++		int num_modes, int dev_mode);
++
++#endif
+diff --git a/include/linux/mxcfb_epdc.h b/include/linux/mxcfb_epdc.h
+new file mode 100644
+index 0000000..35a8b83
+--- /dev/null
++++ b/include/linux/mxcfb_epdc.h
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (C) 2010-2013 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ */
++#ifndef _MXCFB_EPDC_KERNEL
++#define _MXCFB_EPDC_KERNEL
++
++struct imx_epdc_fb_mode {
++    struct fb_videomode *vmode;
++    int vscan_holdoff;
++    int sdoed_width;
++    int sdoed_delay;
++    int sdoez_width;
++    int sdoez_delay;
++    int gdclk_hp_offs;
++    int gdsp_offs;
++    int gdoe_offs;
++    int gdclk_offs;
++    int num_ce;
++};
++
++struct imx_epdc_fb_platform_data {
++    struct imx_epdc_fb_mode *epdc_mode;
++    int num_modes;
++    int (*get_pins) (void);
++    void (*put_pins) (void);
++    void (*enable_pins) (void);
++    void (*disable_pins) (void);
++};
++
++#endif
+diff --git a/include/uapi/linux/mxc_asrc.h b/include/uapi/linux/mxc_asrc.h
+new file mode 100644
+index 0000000..7a2b7df
+--- /dev/null
++++ b/include/uapi/linux/mxc_asrc.h
+@@ -0,0 +1,126 @@
++/*
++ * Copyright 2008-2014 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ *
++ * @file mxc_asrc.h
++ *
++ * @brief i.MX Asynchronous Sample Rate Converter
++ *
++ * @ingroup Audio
++ */
++
++#ifndef __MXC_ASRC_UAPI_H__
++#define __MXC_ASRC_UAPI_H__
++
++#define ASRC_IOC_MAGIC		'C'
++
++#define ASRC_REQ_PAIR		_IOWR(ASRC_IOC_MAGIC, 0, struct asrc_req)
++#define ASRC_CONFIG_PAIR	_IOWR(ASRC_IOC_MAGIC, 1, struct asrc_config)
++#define ASRC_RELEASE_PAIR	_IOW(ASRC_IOC_MAGIC, 2, enum asrc_pair_index)
++#define ASRC_CONVERT		_IOW(ASRC_IOC_MAGIC, 3, struct asrc_convert_buffer)
++#define ASRC_START_CONV		_IOW(ASRC_IOC_MAGIC, 4, enum asrc_pair_index)
++#define ASRC_STOP_CONV		_IOW(ASRC_IOC_MAGIC, 5, enum asrc_pair_index)
++#define ASRC_STATUS		_IOW(ASRC_IOC_MAGIC, 6, struct asrc_status_flags)
++#define ASRC_FLUSH		_IOW(ASRC_IOC_MAGIC, 7, enum asrc_pair_index)
++
++enum asrc_pair_index {
++	ASRC_INVALID_PAIR = -1,
++	ASRC_PAIR_A = 0,
++	ASRC_PAIR_B = 1,
++	ASRC_PAIR_C = 2,
++};
++
++#define ASRC_PAIR_MAX_NUM	(ASRC_PAIR_C + 1)
++
++enum asrc_inclk {
++	INCLK_NONE = 0x03,
++	INCLK_ESAI_RX = 0x00,
++	INCLK_SSI1_RX = 0x01,
++	INCLK_SSI2_RX = 0x02,
++	INCLK_SSI3_RX = 0x07,
++	INCLK_SPDIF_RX = 0x04,
++	INCLK_MLB_CLK = 0x05,
++	INCLK_PAD = 0x06,
++	INCLK_ESAI_TX = 0x08,
++	INCLK_SSI1_TX = 0x09,
++	INCLK_SSI2_TX = 0x0a,
++	INCLK_SSI3_TX = 0x0b,
++	INCLK_SPDIF_TX = 0x0c,
++	INCLK_ASRCK1_CLK = 0x0f,
++};
++
++enum asrc_outclk {
++	OUTCLK_NONE = 0x03,
++	OUTCLK_ESAI_TX = 0x00,
++	OUTCLK_SSI1_TX = 0x01,
++	OUTCLK_SSI2_TX = 0x02,
++	OUTCLK_SSI3_TX = 0x07,
++	OUTCLK_SPDIF_TX = 0x04,
++	OUTCLK_MLB_CLK = 0x05,
++	OUTCLK_PAD = 0x06,
++	OUTCLK_ESAI_RX = 0x08,
++	OUTCLK_SSI1_RX = 0x09,
++	OUTCLK_SSI2_RX = 0x0a,
++	OUTCLK_SSI3_RX = 0x0b,
++	OUTCLK_SPDIF_RX = 0x0c,
++	OUTCLK_ASRCK1_CLK = 0x0f,
++};
++
++enum asrc_word_width {
++	ASRC_WIDTH_24_BIT = 0,
++	ASRC_WIDTH_16_BIT = 1,
++	ASRC_WIDTH_8_BIT = 2,
++};
++
++struct asrc_config {
++	enum asrc_pair_index pair;
++	unsigned int channel_num;
++	unsigned int buffer_num;
++	unsigned int dma_buffer_size;
++	unsigned int input_sample_rate;
++	unsigned int output_sample_rate;
++	enum asrc_word_width input_word_width;
++	enum asrc_word_width output_word_width;
++	enum asrc_inclk inclk;
++	enum asrc_outclk outclk;
++};
++
++struct asrc_req {
++	unsigned int chn_num;
++	enum asrc_pair_index index;
++};
++
++struct asrc_querybuf {
++	unsigned int buffer_index;
++	unsigned int input_length;
++	unsigned int output_length;
++	unsigned long input_offset;
++	unsigned long output_offset;
++};
++
++struct asrc_convert_buffer {
++	void *input_buffer_vaddr;
++	void *output_buffer_vaddr;
++	unsigned int input_buffer_length;
++	unsigned int output_buffer_length;
++};
++
++struct asrc_status_flags {
++	enum asrc_pair_index index;
++	unsigned int overload_error;
++};
++
++enum asrc_error_status {
++	ASRC_TASK_Q_OVERLOAD		= 0x01,
++	ASRC_OUTPUT_TASK_OVERLOAD	= 0x02,
++	ASRC_INPUT_TASK_OVERLOAD	= 0x04,
++	ASRC_OUTPUT_BUFFER_OVERFLOW	= 0x08,
++	ASRC_INPUT_BUFFER_UNDERRUN	= 0x10,
++};
++#endif/* __MXC_ASRC_UAPI_H__ */
+diff --git a/include/uapi/linux/mxc_dcic.h b/include/uapi/linux/mxc_dcic.h
+new file mode 100644
+index 0000000..83e3e2c
+--- /dev/null
++++ b/include/uapi/linux/mxc_dcic.h
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (C) 2014-2015 Freescale Semiconductor, Inc. All Rights Reserved
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++/*!
++ * @file uapi/linux/mxc_dcic.h
++ *
++ * @brief MXC DCIC private header file
++ *
++ * @ingroup MXC DCIC
++ */
++#ifndef __ASM_ARCH_MXC_DCIC_H__
++#define __ASM_ARCH_MXC_DCIC_H__
++
++#define DCIC_IOC_ALLOC_ROI_NUM	_IO('D', 10)
++#define DCIC_IOC_FREE_ROI_NUM	_IO('D', 11)
++#define DCIC_IOC_CONFIG_DCIC	_IO('D', 12)
++#define DCIC_IOC_CONFIG_ROI		_IO('D', 13)
++#define DCIC_IOC_GET_RESULT		_IO('D', 14)
++
++struct roi_params {
++	unsigned int roi_n;
++	unsigned int ref_sig;
++	unsigned int start_y;
++	unsigned int start_x;
++	unsigned int end_y;
++	unsigned int end_x;
++	char freeze;
++};
++
++#endif
+diff --git a/include/uapi/linux/mxc_mlb.h b/include/uapi/linux/mxc_mlb.h
+new file mode 100644
+index 0000000..20ba524
+--- /dev/null
++++ b/include/uapi/linux/mxc_mlb.h
+@@ -0,0 +1,55 @@
++/*
++ * mxc_mlb.h
++ *
++ * Copyright 2008-2013 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#ifndef _MXC_MLB_UAPI_H
++#define _MXC_MLB_UAPI_H
++
++/* define IOCTL command */
++#define MLB_DBG_RUNTIME		_IO('S', 0x09)
++#define MLB_SET_FPS		_IOW('S', 0x10, unsigned int)
++#define MLB_GET_VER		_IOR('S', 0x11, unsigned long)
++#define MLB_SET_DEVADDR		_IOR('S', 0x12, unsigned char)
++
++/*!
++ * set channel address for each logical channel
++ * the MSB 16bits is for tx channel, the left LSB is for rx channel
++ */
++#define MLB_CHAN_SETADDR	_IOW('S', 0x13, unsigned int)
++#define MLB_CHAN_STARTUP	_IO('S', 0x14)
++#define MLB_CHAN_SHUTDOWN	_IO('S', 0x15)
++#define MLB_CHAN_GETEVENT	_IOR('S', 0x16, unsigned long)
++
++#define MLB_SET_ISOC_BLKSIZE_188 _IO('S', 0x17)
++#define MLB_SET_ISOC_BLKSIZE_196 _IO('S', 0x18)
++#define MLB_SET_SYNC_QUAD	_IOW('S', 0x19, unsigned int)
++#define MLB_IRQ_ENABLE		_IO('S', 0x20)
++#define MLB_IRQ_DISABLE		_IO('S', 0x21)
++
++/*!
++ * MLB event define
++ */
++enum {
++	MLB_EVT_TX_PROTO_ERR_CUR = 1 << 0,
++	MLB_EVT_TX_BRK_DETECT_CUR = 1 << 1,
++	MLB_EVT_TX_PROTO_ERR_PREV = 1 << 8,
++	MLB_EVT_TX_BRK_DETECT_PREV = 1 << 9,
++	MLB_EVT_RX_PROTO_ERR_CUR = 1 << 16,
++	MLB_EVT_RX_BRK_DETECT_CUR = 1 << 17,
++	MLB_EVT_RX_PROTO_ERR_PREV = 1 << 24,
++	MLB_EVT_RX_BRK_DETECT_PREV = 1 << 25,
++};
++
++
++#endif				/* _MXC_MLB_H */
+diff --git a/include/uapi/linux/mxc_sim_interface.h b/include/uapi/linux/mxc_sim_interface.h
+new file mode 100644
+index 0000000..9ac3c02
+--- /dev/null
++++ b/include/uapi/linux/mxc_sim_interface.h
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (C) 2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++#ifndef UAPI_MXC_SIM_INTERFACE_H
++#define UAPI_MXC_SIM_INTERFACE_H
++
++#define SIM_ATR_LENGTH_MAX 32
++
++/* Raw ATR SIM_IOCTL_GET_ATR */
++typedef struct {
++	unsigned int size;/* length of ATR received */
++	unsigned char *atr_buffer;/* raw ATR string received */
++	int errval;/* The error vale reported to user space after completing ATR*/
++} sim_atr_t;
++
++/* ISO7816-3 protocols */
++#define SIM_PROTOCOL_T0  1
++#define SIM_PROTOCOL_T1  2
++
++/* Transfer types for SIM_IOCTL_XFER */
++#define SIM_XFER_TYPE_TPDU 1
++#define SIM_XFER_TYPE_PTS  2
++
++typedef struct {
++	unsigned int wwt;
++	unsigned int cwt;
++	unsigned int bwt;
++	unsigned int bgt;
++	unsigned int cgt;
++} sim_timing_t;
++
++/* Transfer data for SIM_IOCTL_XFER */
++typedef struct {
++	unsigned char *xmt_buffer;	/* transmit buffer pointer */
++	int xmt_length;/* transmit buffer length */
++	int timeout;/* transfer timeout in milliseconds */
++	int errval;/* The error vale reported to user space after completing transmitting*/
++} sim_xmt_t;
++
++typedef struct {
++	unsigned char *rcv_buffer;	/* receive buffer pointer */
++	int rcv_length;	/* receive buffer length */
++	int timeout;/* transfer timeout in milliseconds */
++	int errval;/* The error vale reported to user space after receiving*/
++} sim_rcv_t;
++
++typedef struct {
++	unsigned char di;
++	unsigned char fi;
++} sim_baud_t;
++
++/* Interface power states */
++#define SIM_POWER_OFF			(0)
++#define SIM_POWER_ON			(1)
++
++/* Return values for SIM_IOCTL_GET_PRESENSE */
++#define SIM_PRESENT_REMOVED		(0)
++#define SIM_PRESENT_DETECTED		(1)
++#define SIM_PRESENT_OPERATIONAL		(2)
++
++/* The error value */
++#define SIM_OK				(0)
++#define SIM_ERROR_CWT			(1 << 0)
++#define SIM_ERROR_BWT			(1 << 1)
++#define SIM_ERROR_PARITY		(1 << 2)
++#define SIM_ERROR_INVALID_TS		(1 << 3)
++#define SIM_ERROR_FRAME			(1 << 4)
++#define SIM_ERROR_ATR_TIMEROUT		(1 << 5)
++#define SIM_ERROR_NACK_THRESHOLD	(1 << 6)
++#define SIM_ERROR_BGT			(1 << 7)
++#define SIM_ERROR_ATR_DELAY		(1 << 8)
++
++/* Return values for SIM_IOCTL_GET_ERROR */
++#define SIM_E_ACCESS			(1)
++#define SIM_E_TPDUSHORT			(2)
++#define SIM_E_PTSEMPTY			(3)
++#define SIM_E_INVALIDXFERTYPE		(4)
++#define SIM_E_INVALIDXMTLENGTH		(5)
++#define SIM_E_INVALIDRCVLENGTH		(6)
++#define SIM_E_NACK			(7)
++#define SIM_E_TIMEOUT			(8)
++#define SIM_E_NOCARD			(9)
++#define SIM_E_PARAM_FI_INVALID		(10)
++#define SIM_E_PARAM_DI_INVALID		(11)
++#define SIM_E_PARAM_FBYD_WITHFRACTION	(12)
++#define SIM_E_PARAM_FBYD_NOTDIVBY8OR12	(13)
++#define SIM_E_PARAM_DIVISOR_RANGE	(14)
++#define SIM_E_MALLOC			(15)
++#define SIM_E_IRQ			(16)
++#define SIM_E_POWERED_ON		(17)
++#define SIM_E_POWERED_OFF		(18)
++
++/* ioctl encodings */
++#define SIM_IOCTL_BASE			(0xc0)
++#define SIM_IOCTL_GET_PRESENSE		_IOR(SIM_IOCTL_BASE, 1, int)
++#define SIM_IOCTL_GET_ATR		_IOR(SIM_IOCTL_BASE, 2, sim_atr_t)
++#define SIM_IOCTL_XMT			_IOR(SIM_IOCTL_BASE, 3, sim_xmt_t)
++#define SIM_IOCTL_RCV			_IOR(SIM_IOCTL_BASE, 4, sim_rcv_t)
++#define SIM_IOCTL_ACTIVATE		_IO(SIM_IOCTL_BASE, 5)
++#define SIM_IOCTL_DEACTIVATE		_IO(SIM_IOCTL_BASE, 6)
++#define SIM_IOCTL_WARM_RESET		_IO(SIM_IOCTL_BASE, 7)
++#define SIM_IOCTL_COLD_RESET		_IO(SIM_IOCTL_BASE, 8)
++#define SIM_IOCTL_CARD_LOCK		_IO(SIM_IOCTL_BASE, 9)
++#define SIM_IOCTL_CARD_EJECT		_IO(SIM_IOCTL_BASE, 10)
++#define SIM_IOCTL_SET_PROTOCOL		_IOR(SIM_IOCTL_BASE, 11, unsigned int)
++#define SIM_IOCTL_SET_TIMING		_IOR(SIM_IOCTL_BASE, 12, sim_timing_t)
++#define SIM_IOCTL_SET_BAUD		_IOR(SIM_IOCTL_BASE, 13, sim_baud_t)
++#define SIM_IOCTL_WAIT			_IOR(SIM_IOCTL_BASE, 14, unsigned int)
++
++#endif
+diff --git a/include/uapi/linux/mxc_v4l2.h b/include/uapi/linux/mxc_v4l2.h
+new file mode 100644
+index 0000000..f261b92
+--- /dev/null
++++ b/include/uapi/linux/mxc_v4l2.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (C) 2013-2015 Freescale Semiconductor, Inc. All Rights Reserved
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++/*!
++ * @file uapi/linux/mxc_v4l2.h
++ *
++ * @brief MXC V4L2 private header file
++ *
++ * @ingroup MXC V4L2
++ */
++
++#ifndef __ASM_ARCH_MXC_V4L2_H__
++#define __ASM_ARCH_MXC_V4L2_H__
++
++/*
++ * For IPUv1 and IPUv3, V4L2_CID_MXC_ROT means encoder ioctl ID.
++ * And V4L2_CID_MXC_VF_ROT is viewfinder ioctl ID only for IPUv1 and IPUv3.
++ */
++#define V4L2_CID_MXC_ROT		(V4L2_CID_PRIVATE_BASE + 0)
++#define V4L2_CID_MXC_FLASH		(V4L2_CID_PRIVATE_BASE + 1)
++#define V4L2_CID_MXC_VF_ROT		(V4L2_CID_PRIVATE_BASE + 2)
++#define V4L2_CID_MXC_MOTION		(V4L2_CID_PRIVATE_BASE + 3)
++#define V4L2_CID_MXC_SWITCH_CAM		(V4L2_CID_PRIVATE_BASE + 6)
++
++#define V4L2_MXC_ROTATE_NONE			0
++#define V4L2_MXC_ROTATE_VERT_FLIP		1
++#define V4L2_MXC_ROTATE_HORIZ_FLIP		2
++#define V4L2_MXC_ROTATE_180			3
++#define V4L2_MXC_ROTATE_90_RIGHT		4
++#define V4L2_MXC_ROTATE_90_RIGHT_VFLIP		5
++#define V4L2_MXC_ROTATE_90_RIGHT_HFLIP		6
++#define V4L2_MXC_ROTATE_90_LEFT			7
++
++struct v4l2_mxc_offset {
++	uint32_t u_offset;
++	uint32_t v_offset;
++};
++
++struct v4l2_mxc_dest_crop {
++	__u32			type;	/* enum v4l2_buf_type */
++	struct v4l2_mxc_offset   offset;
++};
++
++/*
++ * Private IOCTLs
++ *
++ * VIDIOC_S_INOUT_CROP: Set input stream crop size
++ * VIDIOC_G_INOUT_CROP: Get input stream crop size
++ */
++#define VIDIOC_S_INPUT_CROP \
++	_IOWR('V', BASE_VIDIOC_PRIVATE + 1, struct v4l2_crop)
++#define VIDIOC_G_INPUT_CROP \
++	_IOWR('V', BASE_VIDIOC_PRIVATE + 2, struct v4l2_crop)
++#define VIDIOC_S_DEST_CROP \
++	_IOWR('V', BASE_VIDIOC_PRIVATE + 3, struct v4l2_mxc_dest_crop)
++#endif
+diff --git a/include/uapi/linux/mxcfb.h b/include/uapi/linux/mxcfb.h
+new file mode 100644
+index 0000000..3a98409
+--- /dev/null
++++ b/include/uapi/linux/mxcfb.h
+@@ -0,0 +1,198 @@
++/*
++ * Copyright (C) 2013-2015 Freescale Semiconductor, Inc. All Rights Reserved
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++/*
++ * @file uapi/linux/mxcfb.h
++ *
++ * @brief Global header file for the MXC frame buffer
++ *
++ * @ingroup Framebuffer
++ */
++#ifndef __ASM_ARCH_MXCFB_H__
++#define __ASM_ARCH_MXCFB_H__
++
++#include <linux/fb.h>
++
++#define FB_SYNC_OE_LOW_ACT	0x80000000
++#define FB_SYNC_CLK_LAT_FALL	0x40000000
++#define FB_SYNC_DATA_INVERT	0x20000000
++#define FB_SYNC_CLK_IDLE_EN	0x10000000
++#define FB_SYNC_SHARP_MODE	0x08000000
++#define FB_SYNC_SWAP_RGB	0x04000000
++#define FB_ACCEL_TRIPLE_FLAG	0x00000000
++#define FB_ACCEL_DOUBLE_FLAG	0x00000001
++
++struct mxcfb_gbl_alpha {
++	int enable;
++	int alpha;
++};
++
++struct mxcfb_loc_alpha {
++	int enable;
++	int alpha_in_pixel;
++	unsigned long alpha_phy_addr0;
++	unsigned long alpha_phy_addr1;
++};
++
++struct mxcfb_color_key {
++	int enable;
++	__u32 color_key;
++};
++
++struct mxcfb_pos {
++	__u16 x;
++	__u16 y;
++};
++
++struct mxcfb_gamma {
++	int enable;
++	int constk[16];
++	int slopek[16];
++};
++
++struct mxcfb_gpu_split_fmt {
++	struct fb_var_screeninfo var;
++	unsigned long offset;
++};
++
++struct mxcfb_rect {
++	__u32 top;
++	__u32 left;
++	__u32 width;
++	__u32 height;
++};
++
++#define GRAYSCALE_8BIT				0x1
++#define GRAYSCALE_8BIT_INVERTED			0x2
++#define GRAYSCALE_4BIT                          0x3
++#define GRAYSCALE_4BIT_INVERTED                 0x4
++
++#define AUTO_UPDATE_MODE_REGION_MODE		0
++#define AUTO_UPDATE_MODE_AUTOMATIC_MODE		1
++
++#define UPDATE_SCHEME_SNAPSHOT			0
++#define UPDATE_SCHEME_QUEUE			1
++#define UPDATE_SCHEME_QUEUE_AND_MERGE		2
++
++#define UPDATE_MODE_PARTIAL			0x0
++#define UPDATE_MODE_FULL			0x1
++
++#define WAVEFORM_MODE_GLR16			4
++#define WAVEFORM_MODE_GLD16			5
++#define WAVEFORM_MODE_AUTO			257
++
++#define TEMP_USE_AMBIENT			0x1000
++
++#define EPDC_FLAG_ENABLE_INVERSION		0x01
++#define EPDC_FLAG_FORCE_MONOCHROME		0x02
++#define EPDC_FLAG_USE_CMAP			0x04
++#define EPDC_FLAG_USE_ALT_BUFFER		0x100
++#define EPDC_FLAG_TEST_COLLISION		0x200
++#define EPDC_FLAG_GROUP_UPDATE			0x400
++#define EPDC_FLAG_USE_DITHERING_Y1		0x2000
++#define EPDC_FLAG_USE_DITHERING_Y4		0x4000
++#define EPDC_FLAG_USE_REGAL				0x8000
++
++enum mxcfb_dithering_mode {
++	EPDC_FLAG_USE_DITHERING_PASSTHROUGH = 0x0,
++	EPDC_FLAG_USE_DITHERING_FLOYD_STEINBERG,
++	EPDC_FLAG_USE_DITHERING_ATKINSON,
++	EPDC_FLAG_USE_DITHERING_ORDERED,
++	EPDC_FLAG_USE_DITHERING_QUANT_ONLY,
++	EPDC_FLAG_USE_DITHERING_MAX,
++};
++
++#define FB_POWERDOWN_DISABLE			-1
++
++struct mxcfb_alt_buffer_data {
++	__u32 phys_addr;
++	__u32 width;	/* width of entire buffer */
++	__u32 height;	/* height of entire buffer */
++	struct mxcfb_rect alt_update_region;	/* region within buffer to update */
++};
++
++struct mxcfb_update_data {
++	struct mxcfb_rect update_region;
++	__u32 waveform_mode;
++	__u32 update_mode;
++	__u32 update_marker;
++	int temp;
++	unsigned int flags;
++	int dither_mode;
++	int quant_bit;
++	struct mxcfb_alt_buffer_data alt_buffer_data;
++};
++
++struct mxcfb_update_marker_data {
++	__u32 update_marker;
++	__u32 collision_test;
++};
++
++/*
++ * Structure used to define waveform modes for driver
++ * Needed for driver to perform auto-waveform selection
++ */
++struct mxcfb_waveform_modes {
++	int mode_init;
++	int mode_du;
++	int mode_gc4;
++	int mode_gc8;
++	int mode_gc16;
++	int mode_gc32;
++};
++
++/*
++ * Structure used to define a 5*3 matrix of parameters for
++ * setting IPU DP CSC module related to this framebuffer.
++ */
++struct mxcfb_csc_matrix {
++	int param[5][3];
++};
++
++#define MXCFB_WAIT_FOR_VSYNC	_IOW('F', 0x20, u_int32_t)
++#define MXCFB_SET_GBL_ALPHA     _IOW('F', 0x21, struct mxcfb_gbl_alpha)
++#define MXCFB_SET_CLR_KEY       _IOW('F', 0x22, struct mxcfb_color_key)
++#define MXCFB_SET_OVERLAY_POS   _IOWR('F', 0x24, struct mxcfb_pos)
++#define MXCFB_GET_FB_IPU_CHAN 	_IOR('F', 0x25, u_int32_t)
++#define MXCFB_SET_LOC_ALPHA     _IOWR('F', 0x26, struct mxcfb_loc_alpha)
++#define MXCFB_SET_LOC_ALP_BUF    _IOW('F', 0x27, unsigned long)
++#define MXCFB_SET_GAMMA	       _IOW('F', 0x28, struct mxcfb_gamma)
++#define MXCFB_GET_FB_IPU_DI 	_IOR('F', 0x29, u_int32_t)
++#define MXCFB_GET_DIFMT	       _IOR('F', 0x2A, u_int32_t)
++#define MXCFB_GET_FB_BLANK     _IOR('F', 0x2B, u_int32_t)
++#define MXCFB_SET_DIFMT		_IOW('F', 0x2C, u_int32_t)
++#define MXCFB_CSC_UPDATE	_IOW('F', 0x2D, struct mxcfb_csc_matrix)
++#define MXCFB_SET_GPU_SPLIT_FMT	_IOW('F', 0x2F, struct mxcfb_gpu_split_fmt)
++#define MXCFB_SET_PREFETCH	_IOW('F', 0x30, int)
++#define MXCFB_GET_PREFETCH	_IOR('F', 0x31, int)
++
++/* IOCTLs for E-ink panel updates */
++#define MXCFB_SET_WAVEFORM_MODES	_IOW('F', 0x2B, struct mxcfb_waveform_modes)
++#define MXCFB_SET_TEMPERATURE		_IOW('F', 0x2C, int32_t)
++#define MXCFB_SET_AUTO_UPDATE_MODE	_IOW('F', 0x2D, __u32)
++#define MXCFB_SEND_UPDATE		_IOW('F', 0x2E, struct mxcfb_update_data)
++#define MXCFB_WAIT_FOR_UPDATE_COMPLETE	_IOWR('F', 0x2F, struct mxcfb_update_marker_data)
++#define MXCFB_SET_PWRDOWN_DELAY		_IOW('F', 0x30, int32_t)
++#define MXCFB_GET_PWRDOWN_DELAY		_IOR('F', 0x31, int32_t)
++#define MXCFB_SET_UPDATE_SCHEME		_IOW('F', 0x32, __u32)
++#define MXCFB_GET_WORK_BUFFER		_IOWR('F', 0x34, unsigned long)
++#define MXCFB_DISABLE_EPDC_ACCESS	_IO('F', 0x35)
++#define MXCFB_ENABLE_EPDC_ACCESS	_IO('F', 0x36)
++#endif
+diff --git a/include/video/mxc_edid.h b/include/video/mxc_edid.h
+new file mode 100644
+index 0000000..3a9e69f
+--- /dev/null
++++ b/include/video/mxc_edid.h
+@@ -0,0 +1,105 @@
++/*
++ * Copyright 2009-2015 Freescale Semiconductor, Inc. All Rights Reserved.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++/*!
++ * @defgroup Framebuffer Framebuffer Driver for SDC and ADC.
++ */
++
++/*!
++ * @file mxc_edid.h
++ *
++ * @brief MXC EDID tools
++ *
++ * @ingroup Framebuffer
++ */
++
++#ifndef MXC_EDID_H
++#define MXC_EDID_H
++
++#include <linux/fb.h>
++
++#define FB_VMODE_ASPECT_4_3	0x10
++#define FB_VMODE_ASPECT_16_9	0x20
++#define FB_VMODE_ASPECT_MASK	(FB_VMODE_ASPECT_4_3 | FB_VMODE_ASPECT_16_9)
++
++enum cea_audio_coding_types {
++	AUDIO_CODING_TYPE_REF_STREAM_HEADER	=  0,
++	AUDIO_CODING_TYPE_LPCM			=  1,
++	AUDIO_CODING_TYPE_AC3			=  2,
++	AUDIO_CODING_TYPE_MPEG1			=  3,
++	AUDIO_CODING_TYPE_MP3			=  4,
++	AUDIO_CODING_TYPE_MPEG2			=  5,
++	AUDIO_CODING_TYPE_AACLC			=  6,
++	AUDIO_CODING_TYPE_DTS			=  7,
++	AUDIO_CODING_TYPE_ATRAC			=  8,
++	AUDIO_CODING_TYPE_SACD			=  9,
++	AUDIO_CODING_TYPE_EAC3			= 10,
++	AUDIO_CODING_TYPE_DTS_HD		= 11,
++	AUDIO_CODING_TYPE_MLP			= 12,
++	AUDIO_CODING_TYPE_DST			= 13,
++	AUDIO_CODING_TYPE_WMAPRO		= 14,
++	AUDIO_CODING_TYPE_RESERVED		= 15,
++};
++
++struct mxc_hdmi_3d_format {
++	unsigned char vic_order_2d;
++	unsigned char struct_3d;
++	unsigned char detail_3d;
++	unsigned char reserved;
++};
++
++struct mxc_edid_cfg {
++	bool cea_underscan;
++	bool cea_basicaudio;
++	bool cea_ycbcr444;
++	bool cea_ycbcr422;
++	bool hdmi_cap;
++
++	/*VSD*/
++	bool vsd_support_ai;
++	bool vsd_dc_48bit;
++	bool vsd_dc_36bit;
++	bool vsd_dc_30bit;
++	bool vsd_dc_y444;
++	bool vsd_dvi_dual;
++
++	bool vsd_cnc0;
++	bool vsd_cnc1;
++	bool vsd_cnc2;
++	bool vsd_cnc3;
++
++	u8 vsd_video_latency;
++	u8 vsd_audio_latency;
++	u8 vsd_I_video_latency;
++	u8 vsd_I_audio_latency;
++
++	u8 physical_address[4];
++	u8 hdmi_vic[64];
++	struct mxc_hdmi_3d_format hdmi_3d_format[64];
++	u16 hdmi_3d_mask_all;
++	u16 hdmi_3d_struct_all;
++	u32 vsd_max_tmdsclk_rate;
++
++	u8 max_channels;
++	u8 sample_sizes;
++	u8 sample_rates;
++	u8 speaker_alloc;
++};
++
++int mxc_edid_var_to_vic(struct fb_var_screeninfo *var);
++int mxc_edid_mode_to_vic(const struct fb_videomode *mode);
++int mxc_edid_read(struct i2c_adapter *adp, unsigned short addr,
++	unsigned char *edid, struct mxc_edid_cfg *cfg, struct fb_info *fbi);
++int mxc_edid_parse_ext_blk(unsigned char *edid, struct mxc_edid_cfg *cfg,
++	struct fb_monspecs *specs);
++#endif
+diff --git a/include/video/mxc_hdmi.h b/include/video/mxc_hdmi.h
+new file mode 100644
+index 0000000..79eb302
+--- /dev/null
++++ b/include/video/mxc_hdmi.h
+@@ -0,0 +1,1015 @@
++/*
++ * Copyright (C) 2011-2015 Freescale Semiconductor, Inc.
++ */
++
++/*
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#ifndef __MXC_HDMI_H__
++#define __MXC_HDMI_H__
++
++/*
++ * Hdmi controller registers
++ */
++
++/* Identification Registers */
++#define HDMI_DESIGN_ID                          0x0000
++#define HDMI_REVISION_ID                        0x0001
++#define HDMI_PRODUCT_ID0                        0x0002
++#define HDMI_PRODUCT_ID1                        0x0003
++#define HDMI_CONFIG0_ID                         0x0004
++#define HDMI_CONFIG1_ID                         0x0005
++#define HDMI_CONFIG2_ID                         0x0006
++#define HDMI_CONFIG3_ID                         0x0007
++
++/* Interrupt Registers */
++#define HDMI_IH_FC_STAT0                        0x0100
++#define HDMI_IH_FC_STAT1                        0x0101
++#define HDMI_IH_FC_STAT2                        0x0102
++#define HDMI_IH_AS_STAT0                        0x0103
++#define HDMI_IH_PHY_STAT0                       0x0104
++#define HDMI_IH_I2CM_STAT0                      0x0105
++#define HDMI_IH_CEC_STAT0                       0x0106
++#define HDMI_IH_VP_STAT0                        0x0107
++#define HDMI_IH_I2CMPHY_STAT0                   0x0108
++#define HDMI_IH_AHBDMAAUD_STAT0                 0x0109
++
++#define HDMI_IH_MUTE_FC_STAT0                   0x0180
++#define HDMI_IH_MUTE_FC_STAT1                   0x0181
++#define HDMI_IH_MUTE_FC_STAT2                   0x0182
++#define HDMI_IH_MUTE_AS_STAT0                   0x0183
++#define HDMI_IH_MUTE_PHY_STAT0                  0x0184
++#define HDMI_IH_MUTE_I2CM_STAT0                 0x0185
++#define HDMI_IH_MUTE_CEC_STAT0                  0x0186
++#define HDMI_IH_MUTE_VP_STAT0                   0x0187
++#define HDMI_IH_MUTE_I2CMPHY_STAT0              0x0188
++#define HDMI_IH_MUTE_AHBDMAAUD_STAT0            0x0189
++#define HDMI_IH_MUTE                            0x01FF
++
++/* Video Sample Registers */
++#define HDMI_TX_INVID0                          0x0200
++#define HDMI_TX_INSTUFFING                      0x0201
++#define HDMI_TX_GYDATA0                         0x0202
++#define HDMI_TX_GYDATA1                         0x0203
++#define HDMI_TX_RCRDATA0                        0x0204
++#define HDMI_TX_RCRDATA1                        0x0205
++#define HDMI_TX_BCBDATA0                        0x0206
++#define HDMI_TX_BCBDATA1                        0x0207
++
++/* Video Packetizer Registers */
++#define HDMI_VP_STATUS                          0x0800
++#define HDMI_VP_PR_CD                           0x0801
++#define HDMI_VP_STUFF                           0x0802
++#define HDMI_VP_REMAP                           0x0803
++#define HDMI_VP_CONF                            0x0804
++#define HDMI_VP_STAT                            0x0805
++#define HDMI_VP_INT                             0x0806
++#define HDMI_VP_MASK                            0x0807
++#define HDMI_VP_POL                             0x0808
++
++/* Frame Composer Registers */
++#define HDMI_FC_INVIDCONF                       0x1000
++#define HDMI_FC_INHACTV0                        0x1001
++#define HDMI_FC_INHACTV1                        0x1002
++#define HDMI_FC_INHBLANK0                       0x1003
++#define HDMI_FC_INHBLANK1                       0x1004
++#define HDMI_FC_INVACTV0                        0x1005
++#define HDMI_FC_INVACTV1                        0x1006
++#define HDMI_FC_INVBLANK                        0x1007
++#define HDMI_FC_HSYNCINDELAY0                   0x1008
++#define HDMI_FC_HSYNCINDELAY1                   0x1009
++#define HDMI_FC_HSYNCINWIDTH0                   0x100A
++#define HDMI_FC_HSYNCINWIDTH1                   0x100B
++#define HDMI_FC_VSYNCINDELAY                    0x100C
++#define HDMI_FC_VSYNCINWIDTH                    0x100D
++#define HDMI_FC_INFREQ0                         0x100E
++#define HDMI_FC_INFREQ1                         0x100F
++#define HDMI_FC_INFREQ2                         0x1010
++#define HDMI_FC_CTRLDUR                         0x1011
++#define HDMI_FC_EXCTRLDUR                       0x1012
++#define HDMI_FC_EXCTRLSPAC                      0x1013
++#define HDMI_FC_CH0PREAM                        0x1014
++#define HDMI_FC_CH1PREAM                        0x1015
++#define HDMI_FC_CH2PREAM                        0x1016
++#define HDMI_FC_AVICONF3                        0x1017
++#define HDMI_FC_GCP                             0x1018
++#define HDMI_FC_AVICONF0                        0x1019
++#define HDMI_FC_AVICONF1                        0x101A
++#define HDMI_FC_AVICONF2                        0x101B
++#define HDMI_FC_AVIVID                          0x101C
++#define HDMI_FC_AVIETB0                         0x101D
++#define HDMI_FC_AVIETB1                         0x101E
++#define HDMI_FC_AVISBB0                         0x101F
++#define HDMI_FC_AVISBB1                         0x1020
++#define HDMI_FC_AVIELB0                         0x1021
++#define HDMI_FC_AVIELB1                         0x1022
++#define HDMI_FC_AVISRB0                         0x1023
++#define HDMI_FC_AVISRB1                         0x1024
++#define HDMI_FC_AUDICONF0                       0x1025
++#define HDMI_FC_AUDICONF1                       0x1026
++#define HDMI_FC_AUDICONF2                       0x1027
++#define HDMI_FC_AUDICONF3                       0x1028
++#define HDMI_FC_VSDIEEEID0                      0x1029
++#define HDMI_FC_VSDSIZE                         0x102A
++#define HDMI_FC_VSDIEEEID1                      0x1030
++#define HDMI_FC_VSDIEEEID2                      0x1031
++#define HDMI_FC_VSDPAYLOAD0                     0x1032
++#define HDMI_FC_VSDPAYLOAD1                     0x1033
++#define HDMI_FC_VSDPAYLOAD2                     0x1034
++#define HDMI_FC_VSDPAYLOAD3                     0x1035
++#define HDMI_FC_VSDPAYLOAD4                     0x1036
++#define HDMI_FC_VSDPAYLOAD5                     0x1037
++#define HDMI_FC_VSDPAYLOAD6                     0x1038
++#define HDMI_FC_VSDPAYLOAD7                     0x1039
++#define HDMI_FC_VSDPAYLOAD8                     0x103A
++#define HDMI_FC_VSDPAYLOAD9                     0x103B
++#define HDMI_FC_VSDPAYLOAD10                    0x103C
++#define HDMI_FC_VSDPAYLOAD11                    0x103D
++#define HDMI_FC_VSDPAYLOAD12                    0x103E
++#define HDMI_FC_VSDPAYLOAD13                    0x103F
++#define HDMI_FC_VSDPAYLOAD14                    0x1040
++#define HDMI_FC_VSDPAYLOAD15                    0x1041
++#define HDMI_FC_VSDPAYLOAD16                    0x1042
++#define HDMI_FC_VSDPAYLOAD17                    0x1043
++#define HDMI_FC_VSDPAYLOAD18                    0x1044
++#define HDMI_FC_VSDPAYLOAD19                    0x1045
++#define HDMI_FC_VSDPAYLOAD20                    0x1046
++#define HDMI_FC_VSDPAYLOAD21                    0x1047
++#define HDMI_FC_VSDPAYLOAD22                    0x1048
++#define HDMI_FC_VSDPAYLOAD23                    0x1049
++#define HDMI_FC_SPDVENDORNAME0                  0x104A
++#define HDMI_FC_SPDVENDORNAME1                  0x104B
++#define HDMI_FC_SPDVENDORNAME2                  0x104C
++#define HDMI_FC_SPDVENDORNAME3                  0x104D
++#define HDMI_FC_SPDVENDORNAME4                  0x104E
++#define HDMI_FC_SPDVENDORNAME5                  0x104F
++#define HDMI_FC_SPDVENDORNAME6                  0x1050
++#define HDMI_FC_SPDVENDORNAME7                  0x1051
++#define HDMI_FC_SDPPRODUCTNAME0                 0x1052
++#define HDMI_FC_SDPPRODUCTNAME1                 0x1053
++#define HDMI_FC_SDPPRODUCTNAME2                 0x1054
++#define HDMI_FC_SDPPRODUCTNAME3                 0x1055
++#define HDMI_FC_SDPPRODUCTNAME4                 0x1056
++#define HDMI_FC_SDPPRODUCTNAME5                 0x1057
++#define HDMI_FC_SDPPRODUCTNAME6                 0x1058
++#define HDMI_FC_SDPPRODUCTNAME7                 0x1059
++#define HDMI_FC_SDPPRODUCTNAME8                 0x105A
++#define HDMI_FC_SDPPRODUCTNAME9                 0x105B
++#define HDMI_FC_SDPPRODUCTNAME10                0x105C
++#define HDMI_FC_SDPPRODUCTNAME11                0x105D
++#define HDMI_FC_SDPPRODUCTNAME12                0x105E
++#define HDMI_FC_SDPPRODUCTNAME13                0x105F
++#define HDMI_FC_SDPPRODUCTNAME14                0x1060
++#define HDMI_FC_SPDPRODUCTNAME15                0x1061
++#define HDMI_FC_SPDDEVICEINF                    0x1062
++#define HDMI_FC_AUDSCONF                        0x1063
++#define HDMI_FC_AUDSSTAT                        0x1064
++#define HDMI_FC_DATACH0FILL                     0x1070
++#define HDMI_FC_DATACH1FILL                     0x1071
++#define HDMI_FC_DATACH2FILL                     0x1072
++#define HDMI_FC_CTRLQHIGH                       0x1073
++#define HDMI_FC_CTRLQLOW                        0x1074
++#define HDMI_FC_ACP0                            0x1075
++#define HDMI_FC_ACP28                           0x1076
++#define HDMI_FC_ACP27                           0x1077
++#define HDMI_FC_ACP26                           0x1078
++#define HDMI_FC_ACP25                           0x1079
++#define HDMI_FC_ACP24                           0x107A
++#define HDMI_FC_ACP23                           0x107B
++#define HDMI_FC_ACP22                           0x107C
++#define HDMI_FC_ACP21                           0x107D
++#define HDMI_FC_ACP20                           0x107E
++#define HDMI_FC_ACP19                           0x107F
++#define HDMI_FC_ACP18                           0x1080
++#define HDMI_FC_ACP17                           0x1081
++#define HDMI_FC_ACP16                           0x1082
++#define HDMI_FC_ACP15                           0x1083
++#define HDMI_FC_ACP14                           0x1084
++#define HDMI_FC_ACP13                           0x1085
++#define HDMI_FC_ACP12                           0x1086
++#define HDMI_FC_ACP11                           0x1087
++#define HDMI_FC_ACP10                           0x1088
++#define HDMI_FC_ACP9                            0x1089
++#define HDMI_FC_ACP8                            0x108A
++#define HDMI_FC_ACP7                            0x108B
++#define HDMI_FC_ACP6                            0x108C
++#define HDMI_FC_ACP5                            0x108D
++#define HDMI_FC_ACP4                            0x108E
++#define HDMI_FC_ACP3                            0x108F
++#define HDMI_FC_ACP2                            0x1090
++#define HDMI_FC_ACP1                            0x1091
++#define HDMI_FC_ISCR1_0                         0x1092
++#define HDMI_FC_ISCR1_16                        0x1093
++#define HDMI_FC_ISCR1_15                        0x1094
++#define HDMI_FC_ISCR1_14                        0x1095
++#define HDMI_FC_ISCR1_13                        0x1096
++#define HDMI_FC_ISCR1_12                        0x1097
++#define HDMI_FC_ISCR1_11                        0x1098
++#define HDMI_FC_ISCR1_10                        0x1099
++#define HDMI_FC_ISCR1_9                         0x109A
++#define HDMI_FC_ISCR1_8                         0x109B
++#define HDMI_FC_ISCR1_7                         0x109C
++#define HDMI_FC_ISCR1_6                         0x109D
++#define HDMI_FC_ISCR1_5                         0x109E
++#define HDMI_FC_ISCR1_4                         0x109F
++#define HDMI_FC_ISCR1_3                         0x10A0
++#define HDMI_FC_ISCR1_2                         0x10A1
++#define HDMI_FC_ISCR1_1                         0x10A2
++#define HDMI_FC_ISCR2_15                        0x10A3
++#define HDMI_FC_ISCR2_14                        0x10A4
++#define HDMI_FC_ISCR2_13                        0x10A5
++#define HDMI_FC_ISCR2_12                        0x10A6
++#define HDMI_FC_ISCR2_11                        0x10A7
++#define HDMI_FC_ISCR2_10                        0x10A8
++#define HDMI_FC_ISCR2_9                         0x10A9
++#define HDMI_FC_ISCR2_8                         0x10AA
++#define HDMI_FC_ISCR2_7                         0x10AB
++#define HDMI_FC_ISCR2_6                         0x10AC
++#define HDMI_FC_ISCR2_5                         0x10AD
++#define HDMI_FC_ISCR2_4                         0x10AE
++#define HDMI_FC_ISCR2_3                         0x10AF
++#define HDMI_FC_ISCR2_2                         0x10B0
++#define HDMI_FC_ISCR2_1                         0x10B1
++#define HDMI_FC_ISCR2_0                         0x10B2
++#define HDMI_FC_DATAUTO0                        0x10B3
++#define HDMI_FC_DATAUTO1                        0x10B4
++#define HDMI_FC_DATAUTO2                        0x10B5
++#define HDMI_FC_DATMAN                          0x10B6
++#define HDMI_FC_DATAUTO3                        0x10B7
++#define HDMI_FC_RDRB0                           0x10B8
++#define HDMI_FC_RDRB1                           0x10B9
++#define HDMI_FC_RDRB2                           0x10BA
++#define HDMI_FC_RDRB3                           0x10BB
++#define HDMI_FC_RDRB4                           0x10BC
++#define HDMI_FC_RDRB5                           0x10BD
++#define HDMI_FC_RDRB6                           0x10BE
++#define HDMI_FC_RDRB7                           0x10BF
++#define HDMI_FC_STAT0                           0x10D0
++#define HDMI_FC_INT0                            0x10D1
++#define HDMI_FC_MASK0                           0x10D2
++#define HDMI_FC_POL0                            0x10D3
++#define HDMI_FC_STAT1                           0x10D4
++#define HDMI_FC_INT1                            0x10D5
++#define HDMI_FC_MASK1                           0x10D6
++#define HDMI_FC_POL1                            0x10D7
++#define HDMI_FC_STAT2                           0x10D8
++#define HDMI_FC_INT2                            0x10D9
++#define HDMI_FC_MASK2                           0x10DA
++#define HDMI_FC_POL2                            0x10DB
++#define HDMI_FC_PRCONF                          0x10E0
++
++#define HDMI_FC_GMD_STAT                        0x1100
++#define HDMI_FC_GMD_EN                          0x1101
++#define HDMI_FC_GMD_UP                          0x1102
++#define HDMI_FC_GMD_CONF                        0x1103
++#define HDMI_FC_GMD_HB                          0x1104
++#define HDMI_FC_GMD_PB0                         0x1105
++#define HDMI_FC_GMD_PB1                         0x1106
++#define HDMI_FC_GMD_PB2                         0x1107
++#define HDMI_FC_GMD_PB3                         0x1108
++#define HDMI_FC_GMD_PB4                         0x1109
++#define HDMI_FC_GMD_PB5                         0x110A
++#define HDMI_FC_GMD_PB6                         0x110B
++#define HDMI_FC_GMD_PB7                         0x110C
++#define HDMI_FC_GMD_PB8                         0x110D
++#define HDMI_FC_GMD_PB9                         0x110E
++#define HDMI_FC_GMD_PB10                        0x110F
++#define HDMI_FC_GMD_PB11                        0x1110
++#define HDMI_FC_GMD_PB12                        0x1111
++#define HDMI_FC_GMD_PB13                        0x1112
++#define HDMI_FC_GMD_PB14                        0x1113
++#define HDMI_FC_GMD_PB15                        0x1114
++#define HDMI_FC_GMD_PB16                        0x1115
++#define HDMI_FC_GMD_PB17                        0x1116
++#define HDMI_FC_GMD_PB18                        0x1117
++#define HDMI_FC_GMD_PB19                        0x1118
++#define HDMI_FC_GMD_PB20                        0x1119
++#define HDMI_FC_GMD_PB21                        0x111A
++#define HDMI_FC_GMD_PB22                        0x111B
++#define HDMI_FC_GMD_PB23                        0x111C
++#define HDMI_FC_GMD_PB24                        0x111D
++#define HDMI_FC_GMD_PB25                        0x111E
++#define HDMI_FC_GMD_PB26                        0x111F
++#define HDMI_FC_GMD_PB27                        0x1120
++
++#define HDMI_FC_DBGFORCE                        0x1200
++#define HDMI_FC_DBGAUD0CH0                      0x1201
++#define HDMI_FC_DBGAUD1CH0                      0x1202
++#define HDMI_FC_DBGAUD2CH0                      0x1203
++#define HDMI_FC_DBGAUD0CH1                      0x1204
++#define HDMI_FC_DBGAUD1CH1                      0x1205
++#define HDMI_FC_DBGAUD2CH1                      0x1206
++#define HDMI_FC_DBGAUD0CH2                      0x1207
++#define HDMI_FC_DBGAUD1CH2                      0x1208
++#define HDMI_FC_DBGAUD2CH2                      0x1209
++#define HDMI_FC_DBGAUD0CH3                      0x120A
++#define HDMI_FC_DBGAUD1CH3                      0x120B
++#define HDMI_FC_DBGAUD2CH3                      0x120C
++#define HDMI_FC_DBGAUD0CH4                      0x120D
++#define HDMI_FC_DBGAUD1CH4                      0x120E
++#define HDMI_FC_DBGAUD2CH4                      0x120F
++#define HDMI_FC_DBGAUD0CH5                      0x1210
++#define HDMI_FC_DBGAUD1CH5                      0x1211
++#define HDMI_FC_DBGAUD2CH5                      0x1212
++#define HDMI_FC_DBGAUD0CH6                      0x1213
++#define HDMI_FC_DBGAUD1CH6                      0x1214
++#define HDMI_FC_DBGAUD2CH6                      0x1215
++#define HDMI_FC_DBGAUD0CH7                      0x1216
++#define HDMI_FC_DBGAUD1CH7                      0x1217
++#define HDMI_FC_DBGAUD2CH7                      0x1218
++#define HDMI_FC_DBGTMDS0                        0x1219
++#define HDMI_FC_DBGTMDS1                        0x121A
++#define HDMI_FC_DBGTMDS2                        0x121B
++
++/* HDMI Source PHY Registers */
++#define HDMI_PHY_CONF0                          0x3000
++#define HDMI_PHY_TST0                           0x3001
++#define HDMI_PHY_TST1                           0x3002
++#define HDMI_PHY_TST2                           0x3003
++#define HDMI_PHY_STAT0                          0x3004
++#define HDMI_PHY_INT0                           0x3005
++#define HDMI_PHY_MASK0                          0x3006
++#define HDMI_PHY_POL0                           0x3007
++
++/* HDMI Master PHY Registers */
++#define HDMI_PHY_I2CM_SLAVE_ADDR                0x3020
++#define HDMI_PHY_I2CM_ADDRESS_ADDR              0x3021
++#define HDMI_PHY_I2CM_DATAO_1_ADDR              0x3022
++#define HDMI_PHY_I2CM_DATAO_0_ADDR              0x3023
++#define HDMI_PHY_I2CM_DATAI_1_ADDR              0x3024
++#define HDMI_PHY_I2CM_DATAI_0_ADDR              0x3025
++#define HDMI_PHY_I2CM_OPERATION_ADDR            0x3026
++#define HDMI_PHY_I2CM_INT_ADDR                  0x3027
++#define HDMI_PHY_I2CM_CTLINT_ADDR               0x3028
++#define HDMI_PHY_I2CM_DIV_ADDR                  0x3029
++#define HDMI_PHY_I2CM_SOFTRSTZ_ADDR             0x302a
++#define HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR        0x302b
++#define HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR        0x302c
++#define HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR        0x302d
++#define HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR        0x302e
++#define HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR        0x302f
++#define HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR        0x3030
++#define HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR        0x3031
++#define HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR        0x3032
++
++/* Audio Sampler Registers */
++#define HDMI_AUD_CONF0                          0x3100
++#define HDMI_AUD_CONF1                          0x3101
++#define HDMI_AUD_INT                            0x3102
++#define HDMI_AUD_CONF2                          0x3103
++#define HDMI_AUD_N1                             0x3200
++#define HDMI_AUD_N2                             0x3201
++#define HDMI_AUD_N3                             0x3202
++#define HDMI_AUD_CTS1                           0x3203
++#define HDMI_AUD_CTS2                           0x3204
++#define HDMI_AUD_CTS3                           0x3205
++#define HDMI_AUD_INPUTCLKFS                     0x3206
++#define HDMI_AUD_SPDIFINT			0x3302
++#define HDMI_AUD_CONF0_HBR                      0x3400
++#define HDMI_AUD_HBR_STATUS                     0x3401
++#define HDMI_AUD_HBR_INT                        0x3402
++#define HDMI_AUD_HBR_POL                        0x3403
++#define HDMI_AUD_HBR_MASK                       0x3404
++
++/* Generic Parallel Audio Interface Registers */
++/* Not used as GPAUD interface is not enabled in hw */
++#define HDMI_GP_CONF0                           0x3500
++#define HDMI_GP_CONF1                           0x3501
++#define HDMI_GP_CONF2                           0x3502
++#define HDMI_GP_STAT                            0x3503
++#define HDMI_GP_INT                             0x3504
++#define HDMI_GP_MASK                            0x3505
++#define HDMI_GP_POL                             0x3506
++
++/* Audio DMA Registers */
++#define HDMI_AHB_DMA_CONF0                      0x3600
++#define HDMI_AHB_DMA_START                      0x3601
++#define HDMI_AHB_DMA_STOP                       0x3602
++#define HDMI_AHB_DMA_THRSLD                     0x3603
++#define HDMI_AHB_DMA_STRADDR0                   0x3604
++#define HDMI_AHB_DMA_STRADDR1                   0x3605
++#define HDMI_AHB_DMA_STRADDR2                   0x3606
++#define HDMI_AHB_DMA_STRADDR3                   0x3607
++#define HDMI_AHB_DMA_STPADDR0                   0x3608
++#define HDMI_AHB_DMA_STPADDR1                   0x3609
++#define HDMI_AHB_DMA_STPADDR2                   0x360a
++#define HDMI_AHB_DMA_STPADDR3                   0x360b
++#define HDMI_AHB_DMA_BSTADDR0                   0x360c
++#define HDMI_AHB_DMA_BSTADDR1                   0x360d
++#define HDMI_AHB_DMA_BSTADDR2                   0x360e
++#define HDMI_AHB_DMA_BSTADDR3                   0x360f
++#define HDMI_AHB_DMA_MBLENGTH0                  0x3610
++#define HDMI_AHB_DMA_MBLENGTH1                  0x3611
++#define HDMI_AHB_DMA_STAT                       0x3612
++#define HDMI_AHB_DMA_INT                        0x3613
++#define HDMI_AHB_DMA_MASK                       0x3614
++#define HDMI_AHB_DMA_POL                        0x3615
++#define HDMI_AHB_DMA_CONF1                      0x3616
++#define HDMI_AHB_DMA_BUFFSTAT                   0x3617
++#define HDMI_AHB_DMA_BUFFINT                    0x3618
++#define HDMI_AHB_DMA_BUFFMASK                   0x3619
++#define HDMI_AHB_DMA_BUFFPOL                    0x361a
++
++/* Main Controller Registers */
++#define HDMI_MC_SFRDIV                          0x4000
++#define HDMI_MC_CLKDIS                          0x4001
++#define HDMI_MC_SWRSTZ                          0x4002
++#define HDMI_MC_OPCTRL                          0x4003
++#define HDMI_MC_FLOWCTRL                        0x4004
++#define HDMI_MC_PHYRSTZ                         0x4005
++#define HDMI_MC_LOCKONCLOCK                     0x4006
++#define HDMI_MC_HEACPHY_RST                     0x4007
++
++/* Color Space  Converter Registers */
++#define HDMI_CSC_CFG                            0x4100
++#define HDMI_CSC_SCALE                          0x4101
++#define HDMI_CSC_COEF_A1_MSB                    0x4102
++#define HDMI_CSC_COEF_A1_LSB                    0x4103
++#define HDMI_CSC_COEF_A2_MSB                    0x4104
++#define HDMI_CSC_COEF_A2_LSB                    0x4105
++#define HDMI_CSC_COEF_A3_MSB                    0x4106
++#define HDMI_CSC_COEF_A3_LSB                    0x4107
++#define HDMI_CSC_COEF_A4_MSB                    0x4108
++#define HDMI_CSC_COEF_A4_LSB                    0x4109
++#define HDMI_CSC_COEF_B1_MSB                    0x410A
++#define HDMI_CSC_COEF_B1_LSB                    0x410B
++#define HDMI_CSC_COEF_B2_MSB                    0x410C
++#define HDMI_CSC_COEF_B2_LSB                    0x410D
++#define HDMI_CSC_COEF_B3_MSB                    0x410E
++#define HDMI_CSC_COEF_B3_LSB                    0x410F
++#define HDMI_CSC_COEF_B4_MSB                    0x4110
++#define HDMI_CSC_COEF_B4_LSB                    0x4111
++#define HDMI_CSC_COEF_C1_MSB                    0x4112
++#define HDMI_CSC_COEF_C1_LSB                    0x4113
++#define HDMI_CSC_COEF_C2_MSB                    0x4114
++#define HDMI_CSC_COEF_C2_LSB                    0x4115
++#define HDMI_CSC_COEF_C3_MSB                    0x4116
++#define HDMI_CSC_COEF_C3_LSB                    0x4117
++#define HDMI_CSC_COEF_C4_MSB                    0x4118
++#define HDMI_CSC_COEF_C4_LSB                    0x4119
++
++/* HDCP Interrupt Registers */
++#define HDMI_A_APIINTCLR                        0x5006
++#define HDMI_A_APIINTSTAT                       0x5007
++#define HDMI_A_APIINTMSK                        0x5008
++
++/* CEC Engine Registers */
++#define HDMI_CEC_CTRL                           0x7D00
++#define HDMI_CEC_STAT                           0x7D01
++#define HDMI_CEC_MASK                           0x7D02
++#define HDMI_CEC_POLARITY                       0x7D03
++#define HDMI_CEC_INT                            0x7D04
++#define HDMI_CEC_ADDR_L                         0x7D05
++#define HDMI_CEC_ADDR_H                         0x7D06
++#define HDMI_CEC_TX_CNT                         0x7D07
++#define HDMI_CEC_RX_CNT                         0x7D08
++#define HDMI_CEC_TX_DATA0                       0x7D10
++#define HDMI_CEC_TX_DATA1                       0x7D11
++#define HDMI_CEC_TX_DATA2                       0x7D12
++#define HDMI_CEC_TX_DATA3                       0x7D13
++#define HDMI_CEC_TX_DATA4                       0x7D14
++#define HDMI_CEC_TX_DATA5                       0x7D15
++#define HDMI_CEC_TX_DATA6                       0x7D16
++#define HDMI_CEC_TX_DATA7                       0x7D17
++#define HDMI_CEC_TX_DATA8                       0x7D18
++#define HDMI_CEC_TX_DATA9                       0x7D19
++#define HDMI_CEC_TX_DATA10                      0x7D1a
++#define HDMI_CEC_TX_DATA11                      0x7D1b
++#define HDMI_CEC_TX_DATA12                      0x7D1c
++#define HDMI_CEC_TX_DATA13                      0x7D1d
++#define HDMI_CEC_TX_DATA14                      0x7D1e
++#define HDMI_CEC_TX_DATA15                      0x7D1f
++#define HDMI_CEC_RX_DATA0                       0x7D20
++#define HDMI_CEC_RX_DATA1                       0x7D21
++#define HDMI_CEC_RX_DATA2                       0x7D22
++#define HDMI_CEC_RX_DATA3                       0x7D23
++#define HDMI_CEC_RX_DATA4                       0x7D24
++#define HDMI_CEC_RX_DATA5                       0x7D25
++#define HDMI_CEC_RX_DATA6                       0x7D26
++#define HDMI_CEC_RX_DATA7                       0x7D27
++#define HDMI_CEC_RX_DATA8                       0x7D28
++#define HDMI_CEC_RX_DATA9                       0x7D29
++#define HDMI_CEC_RX_DATA10                      0x7D2a
++#define HDMI_CEC_RX_DATA11                      0x7D2b
++#define HDMI_CEC_RX_DATA12                      0x7D2c
++#define HDMI_CEC_RX_DATA13                      0x7D2d
++#define HDMI_CEC_RX_DATA14                      0x7D2e
++#define HDMI_CEC_RX_DATA15                      0x7D2f
++#define HDMI_CEC_LOCK                           0x7D30
++#define HDMI_CEC_WKUPCTRL                       0x7D31
++
++/* I2C Master Registers (E-DDC) */
++#define HDMI_I2CM_SLAVE                         0x7E00
++#define HDMI_I2CM_ADDRESS                       0x7E01
++#define HDMI_I2CM_DATAO                         0x7E02
++#define HDMI_I2CM_DATAI                         0x7E03
++#define HDMI_I2CM_OPERATION                     0x7E04
++#define HDMI_I2CM_INT                           0x7E05
++#define HDMI_I2CM_CTLINT                        0x7E06
++#define HDMI_I2CM_DIV                           0x7E07
++#define HDMI_I2CM_SEGADDR                       0x7E08
++#define HDMI_I2CM_SOFTRSTZ                      0x7E09
++#define HDMI_I2CM_SEGPTR                        0x7E0A
++#define HDMI_I2CM_SS_SCL_HCNT_1_ADDR            0x7E0B
++#define HDMI_I2CM_SS_SCL_HCNT_0_ADDR            0x7E0C
++#define HDMI_I2CM_SS_SCL_LCNT_1_ADDR            0x7E0D
++#define HDMI_I2CM_SS_SCL_LCNT_0_ADDR            0x7E0E
++#define HDMI_I2CM_FS_SCL_HCNT_1_ADDR            0x7E0F
++#define HDMI_I2CM_FS_SCL_HCNT_0_ADDR            0x7E10
++#define HDMI_I2CM_FS_SCL_LCNT_1_ADDR            0x7E11
++#define HDMI_I2CM_FS_SCL_LCNT_0_ADDR            0x7E12
++
++/* Random Number Generator Registers (RNG) */
++#define HDMI_RNG_BASE                           0x8000
++
++
++/*
++ * Register field definitions
++ */
++enum {
++/* IH_FC_INT2 field values */
++	HDMI_IH_FC_INT2_OVERFLOW_MASK = 0x03,
++	HDMI_IH_FC_INT2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_IH_FC_INT2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* IH_FC_STAT2 field values */
++	HDMI_IH_FC_STAT2_OVERFLOW_MASK = 0x03,
++	HDMI_IH_FC_STAT2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_IH_FC_STAT2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* IH_PHY_STAT0 field values */
++	HDMI_IH_PHY_STAT0_RX_SENSE3 = 0x20,
++	HDMI_IH_PHY_STAT0_RX_SENSE2 = 0x10,
++	HDMI_IH_PHY_STAT0_RX_SENSE1 = 0x8,
++	HDMI_IH_PHY_STAT0_RX_SENSE0 = 0x4,
++	HDMI_IH_PHY_STAT0_TX_PHY_LOCK = 0x2,
++	HDMI_IH_PHY_STAT0_HPD = 0x1,
++
++/* IH_CEC_STAT0 field values */
++	HDMI_IH_CEC_STAT0_WAKEUP = 0x40,
++	HDMI_IH_CEC_STAT0_ERROR_FOLL = 0x20,
++	HDMI_IH_CEC_STAT0_ERROR_INIT = 0x10,
++	HDMI_IH_CEC_STAT0_ARB_LOST = 0x8,
++	HDMI_IH_CEC_STAT0_NACK = 0x4,
++	HDMI_IH_CEC_STAT0_EOM = 0x2,
++	HDMI_IH_CEC_STAT0_DONE = 0x1,
++
++
++/* IH_MUTE_I2CMPHY_STAT0 field values */
++	HDMI_IH_MUTE_I2CMPHY_STAT0_I2CMPHYDONE = 0x2,
++	HDMI_IH_MUTE_I2CMPHY_STAT0_I2CMPHYERROR = 0x1,
++
++/* IH_PHY_STAT0 field values */
++	HDMI_IH_MUTE_PHY_STAT0_RX_SENSE3 = 0x20,
++	HDMI_IH_MUTE_PHY_STAT0_RX_SENSE2 = 0x10,
++	HDMI_IH_MUTE_PHY_STAT0_RX_SENSE1 = 0x8,
++	HDMI_IH_MUTE_PHY_STAT0_RX_SENSE0 = 0x4,
++	HDMI_IH_MUTE_PHY_STAT0_TX_PHY_LOCK = 0x2,
++	HDMI_IH_MUTE_PHY_STAT0_HPD = 0x1,
++
++/* IH_AHBDMAAUD_STAT0 field values */
++	HDMI_IH_AHBDMAAUD_STAT0_ERROR = 0x20,
++	HDMI_IH_AHBDMAAUD_STAT0_LOST = 0x10,
++	HDMI_IH_AHBDMAAUD_STAT0_RETRY = 0x08,
++	HDMI_IH_AHBDMAAUD_STAT0_DONE = 0x04,
++	HDMI_IH_AHBDMAAUD_STAT0_BUFFFULL = 0x02,
++	HDMI_IH_AHBDMAAUD_STAT0_BUFFEMPTY = 0x01,
++
++/* IH_MUTE_FC_STAT2 field values */
++	HDMI_IH_MUTE_FC_STAT2_OVERFLOW_MASK = 0x03,
++	HDMI_IH_MUTE_FC_STAT2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_IH_MUTE_FC_STAT2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* IH_MUTE_AHBDMAAUD_STAT0 field values */
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_ERROR = 0x20,
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_LOST = 0x10,
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_RETRY = 0x08,
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_DONE = 0x04,
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_BUFFFULL = 0x02,
++	HDMI_IH_MUTE_AHBDMAAUD_STAT0_BUFFEMPTY = 0x01,
++
++/* IH_MUTE field values */
++	HDMI_IH_MUTE_MUTE_WAKEUP_INTERRUPT = 0x2,
++	HDMI_IH_MUTE_MUTE_ALL_INTERRUPT = 0x1,
++
++/* TX_INVID0 field values */
++	HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_MASK = 0x80,
++	HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_ENABLE = 0x80,
++	HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE = 0x00,
++	HDMI_TX_INVID0_VIDEO_MAPPING_MASK = 0x1F,
++	HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET = 0,
++
++/* TX_INSTUFFING field values */
++	HDMI_TX_INSTUFFING_BDBDATA_STUFFING_MASK = 0x4,
++	HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE = 0x4,
++	HDMI_TX_INSTUFFING_BDBDATA_STUFFING_DISABLE = 0x0,
++	HDMI_TX_INSTUFFING_RCRDATA_STUFFING_MASK = 0x2,
++	HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE = 0x2,
++	HDMI_TX_INSTUFFING_RCRDATA_STUFFING_DISABLE = 0x0,
++	HDMI_TX_INSTUFFING_GYDATA_STUFFING_MASK = 0x1,
++	HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE = 0x1,
++	HDMI_TX_INSTUFFING_GYDATA_STUFFING_DISABLE = 0x0,
++
++/* VP_PR_CD field values */
++	HDMI_VP_PR_CD_COLOR_DEPTH_MASK = 0xF0,
++	HDMI_VP_PR_CD_COLOR_DEPTH_OFFSET = 4,
++	HDMI_VP_PR_CD_DESIRED_PR_FACTOR_MASK = 0x0F,
++	HDMI_VP_PR_CD_DESIRED_PR_FACTOR_OFFSET = 0,
++
++/* VP_STUFF field values */
++	HDMI_VP_STUFF_IDEFAULT_PHASE_MASK = 0x20,
++	HDMI_VP_STUFF_IDEFAULT_PHASE_OFFSET = 5,
++	HDMI_VP_STUFF_IFIX_PP_TO_LAST_MASK = 0x10,
++	HDMI_VP_STUFF_IFIX_PP_TO_LAST_OFFSET = 4,
++	HDMI_VP_STUFF_ICX_GOTO_P0_ST_MASK = 0x8,
++	HDMI_VP_STUFF_ICX_GOTO_P0_ST_OFFSET = 3,
++	HDMI_VP_STUFF_YCC422_STUFFING_MASK = 0x4,
++	HDMI_VP_STUFF_YCC422_STUFFING_STUFFING_MODE = 0x4,
++	HDMI_VP_STUFF_YCC422_STUFFING_DIRECT_MODE = 0x0,
++	HDMI_VP_STUFF_PP_STUFFING_MASK = 0x2,
++	HDMI_VP_STUFF_PP_STUFFING_STUFFING_MODE = 0x2,
++	HDMI_VP_STUFF_PP_STUFFING_DIRECT_MODE = 0x0,
++	HDMI_VP_STUFF_PR_STUFFING_MASK = 0x1,
++	HDMI_VP_STUFF_PR_STUFFING_STUFFING_MODE = 0x1,
++	HDMI_VP_STUFF_PR_STUFFING_DIRECT_MODE = 0x0,
++
++/* VP_CONF field values */
++	HDMI_VP_CONF_BYPASS_EN_MASK = 0x40,
++	HDMI_VP_CONF_BYPASS_EN_ENABLE = 0x40,
++	HDMI_VP_CONF_BYPASS_EN_DISABLE = 0x00,
++	HDMI_VP_CONF_PP_EN_ENMASK = 0x20,
++	HDMI_VP_CONF_PP_EN_ENABLE = 0x20,
++	HDMI_VP_CONF_PP_EN_DISABLE = 0x00,
++	HDMI_VP_CONF_PR_EN_MASK = 0x10,
++	HDMI_VP_CONF_PR_EN_ENABLE = 0x10,
++	HDMI_VP_CONF_PR_EN_DISABLE = 0x00,
++	HDMI_VP_CONF_YCC422_EN_MASK = 0x8,
++	HDMI_VP_CONF_YCC422_EN_ENABLE = 0x8,
++	HDMI_VP_CONF_YCC422_EN_DISABLE = 0x0,
++	HDMI_VP_CONF_BYPASS_SELECT_MASK = 0x4,
++	HDMI_VP_CONF_BYPASS_SELECT_VID_PACKETIZER = 0x4,
++	HDMI_VP_CONF_BYPASS_SELECT_PIX_REPEATER = 0x0,
++	HDMI_VP_CONF_OUTPUT_SELECTOR_MASK = 0x3,
++	HDMI_VP_CONF_OUTPUT_SELECTOR_BYPASS = 0x3,
++	HDMI_VP_CONF_OUTPUT_SELECTOR_YCC422 = 0x1,
++	HDMI_VP_CONF_OUTPUT_SELECTOR_PP = 0x0,
++
++/* VP_REMAP field values */
++	HDMI_VP_REMAP_MASK = 0x3,
++	HDMI_VP_REMAP_YCC422_24bit = 0x2,
++	HDMI_VP_REMAP_YCC422_20bit = 0x1,
++	HDMI_VP_REMAP_YCC422_16bit = 0x0,
++
++/* FC_INVIDCONF field values */
++	HDMI_FC_INVIDCONF_HDCP_KEEPOUT_MASK = 0x80,
++	HDMI_FC_INVIDCONF_HDCP_KEEPOUT_ACTIVE = 0x80,
++	HDMI_FC_INVIDCONF_HDCP_KEEPOUT_INACTIVE = 0x00,
++	HDMI_FC_INVIDCONF_VSYNC_IN_POLARITY_MASK = 0x40,
++	HDMI_FC_INVIDCONF_VSYNC_IN_POLARITY_ACTIVE_HIGH = 0x40,
++	HDMI_FC_INVIDCONF_VSYNC_IN_POLARITY_ACTIVE_LOW = 0x00,
++	HDMI_FC_INVIDCONF_HSYNC_IN_POLARITY_MASK = 0x20,
++	HDMI_FC_INVIDCONF_HSYNC_IN_POLARITY_ACTIVE_HIGH = 0x20,
++	HDMI_FC_INVIDCONF_HSYNC_IN_POLARITY_ACTIVE_LOW = 0x00,
++	HDMI_FC_INVIDCONF_DE_IN_POLARITY_MASK = 0x10,
++	HDMI_FC_INVIDCONF_DE_IN_POLARITY_ACTIVE_HIGH = 0x10,
++	HDMI_FC_INVIDCONF_DE_IN_POLARITY_ACTIVE_LOW = 0x00,
++	HDMI_FC_INVIDCONF_DVI_MODEZ_MASK = 0x8,
++	HDMI_FC_INVIDCONF_DVI_MODEZ_HDMI_MODE = 0x8,
++	HDMI_FC_INVIDCONF_DVI_MODEZ_DVI_MODE = 0x0,
++	HDMI_FC_INVIDCONF_R_V_BLANK_IN_OSC_MASK = 0x2,
++	HDMI_FC_INVIDCONF_R_V_BLANK_IN_OSC_ACTIVE_HIGH = 0x2,
++	HDMI_FC_INVIDCONF_R_V_BLANK_IN_OSC_ACTIVE_LOW = 0x0,
++	HDMI_FC_INVIDCONF_IN_I_P_MASK = 0x1,
++	HDMI_FC_INVIDCONF_IN_I_P_INTERLACED = 0x1,
++	HDMI_FC_INVIDCONF_IN_I_P_PROGRESSIVE = 0x0,
++
++/* FC_AUDICONF0 field values */
++	HDMI_FC_AUDICONF0_CC_OFFSET = 4,
++	HDMI_FC_AUDICONF0_CC_MASK = 0x70,
++	HDMI_FC_AUDICONF0_CT_OFFSET = 0,
++	HDMI_FC_AUDICONF0_CT_MASK = 0xF,
++
++/* FC_AUDICONF1 field values */
++	HDMI_FC_AUDICONF1_SS_OFFSET = 3,
++	HDMI_FC_AUDICONF1_SS_MASK = 0x18,
++	HDMI_FC_AUDICONF1_SF_OFFSET = 0,
++	HDMI_FC_AUDICONF1_SF_MASK = 0x7,
++
++/* FC_AUDICONF3 field values */
++	HDMI_FC_AUDICONF3_LFEPBL_OFFSET = 5,
++	HDMI_FC_AUDICONF3_LFEPBL_MASK = 0x60,
++	HDMI_FC_AUDICONF3_DM_INH_OFFSET = 4,
++	HDMI_FC_AUDICONF3_DM_INH_MASK = 0x10,
++	HDMI_FC_AUDICONF3_LSV_OFFSET = 0,
++	HDMI_FC_AUDICONF3_LSV_MASK = 0xF,
++
++/* FC_AUDSCHNLS0 field values */
++	HDMI_FC_AUDSCHNLS0_CGMSA_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS0_CGMSA_MASK = 0x30,
++	HDMI_FC_AUDSCHNLS0_COPYRIGHT_OFFSET = 0,
++	HDMI_FC_AUDSCHNLS0_COPYRIGHT_MASK = 0x01,
++
++/* FC_AUDSCHNLS3-6 field values */
++	HDMI_FC_AUDSCHNLS3_OIEC_CH0_OFFSET = 0,
++	HDMI_FC_AUDSCHNLS3_OIEC_CH0_MASK = 0x0f,
++	HDMI_FC_AUDSCHNLS3_OIEC_CH1_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS3_OIEC_CH1_MASK = 0xf0,
++	HDMI_FC_AUDSCHNLS4_OIEC_CH2_OFFSET = 0,
++	HDMI_FC_AUDSCHNLS4_OIEC_CH2_MASK = 0x0f,
++	HDMI_FC_AUDSCHNLS4_OIEC_CH3_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS4_OIEC_CH3_MASK = 0xf0,
++
++	HDMI_FC_AUDSCHNLS5_OIEC_CH0_OFFSET = 0,
++	HDMI_FC_AUDSCHNLS5_OIEC_CH0_MASK = 0x0f,
++	HDMI_FC_AUDSCHNLS5_OIEC_CH1_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS5_OIEC_CH1_MASK = 0xf0,
++	HDMI_FC_AUDSCHNLS6_OIEC_CH2_OFFSET = 0,
++	HDMI_FC_AUDSCHNLS6_OIEC_CH2_MASK = 0x0f,
++	HDMI_FC_AUDSCHNLS6_OIEC_CH3_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS6_OIEC_CH3_MASK = 0xf0,
++
++/* HDMI_FC_AUDSCHNLS7 field values */
++	HDMI_FC_AUDSCHNLS7_ACCURACY_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS7_ACCURACY_MASK = 0x30,
++
++/* HDMI_FC_AUDSCHNLS8 field values */
++	HDMI_FC_AUDSCHNLS8_ORIGSAMPFREQ_MASK = 0xf0,
++	HDMI_FC_AUDSCHNLS8_ORIGSAMPFREQ_OFFSET = 4,
++	HDMI_FC_AUDSCHNLS8_WORDLEGNTH_MASK = 0x0f,
++	HDMI_FC_AUDSCHNLS8_WORDLEGNTH_OFFSET = 0,
++
++/* FC_AUDSCONF field values */
++	HDMI_FC_AUDSCONF_AUD_PACKET_SAMPFIT_MASK = 0xF0,
++	HDMI_FC_AUDSCONF_AUD_PACKET_SAMPFIT_OFFSET = 4,
++	HDMI_FC_AUDSCONF_AUD_PACKET_LAYOUT_MASK = 0x1,
++	HDMI_FC_AUDSCONF_AUD_PACKET_LAYOUT_OFFSET = 0,
++	HDMI_FC_AUDSCONF_AUD_PACKET_LAYOUT_LAYOUT1 = 0x1,
++	HDMI_FC_AUDSCONF_AUD_PACKET_LAYOUT_LAYOUT0 = 0x0,
++
++/* FC_STAT2 field values */
++	HDMI_FC_STAT2_OVERFLOW_MASK = 0x03,
++	HDMI_FC_STAT2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_FC_STAT2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* FC_INT2 field values */
++	HDMI_FC_INT2_OVERFLOW_MASK = 0x03,
++	HDMI_FC_INT2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_FC_INT2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* FC_MASK2 field values */
++	HDMI_FC_MASK2_OVERFLOW_MASK = 0x03,
++	HDMI_FC_MASK2_LOW_PRIORITY_OVERFLOW = 0x02,
++	HDMI_FC_MASK2_HIGH_PRIORITY_OVERFLOW = 0x01,
++
++/* FC_PRCONF field values */
++	HDMI_FC_PRCONF_INCOMING_PR_FACTOR_MASK = 0xF0,
++	HDMI_FC_PRCONF_INCOMING_PR_FACTOR_OFFSET = 4,
++	HDMI_FC_PRCONF_OUTPUT_PR_FACTOR_MASK = 0x0F,
++	HDMI_FC_PRCONF_OUTPUT_PR_FACTOR_OFFSET = 0,
++
++/* FC_AVICONF0-FC_AVICONF3 field values */
++	HDMI_FC_AVICONF0_PIX_FMT_MASK = 0x03,
++	HDMI_FC_AVICONF0_PIX_FMT_RGB = 0x00,
++	HDMI_FC_AVICONF0_PIX_FMT_YCBCR422 = 0x01,
++	HDMI_FC_AVICONF0_PIX_FMT_YCBCR444 = 0x02,
++	HDMI_FC_AVICONF0_ACTIVE_FMT_MASK = 0x40,
++	HDMI_FC_AVICONF0_ACTIVE_FMT_INFO_PRESENT = 0x40,
++	HDMI_FC_AVICONF0_ACTIVE_FMT_NO_INFO = 0x00,
++	HDMI_FC_AVICONF0_BAR_DATA_MASK = 0x0C,
++	HDMI_FC_AVICONF0_BAR_DATA_NO_DATA = 0x00,
++	HDMI_FC_AVICONF0_BAR_DATA_VERT_BAR = 0x04,
++	HDMI_FC_AVICONF0_BAR_DATA_HORIZ_BAR = 0x08,
++	HDMI_FC_AVICONF0_BAR_DATA_VERT_HORIZ_BAR = 0x0C,
++	HDMI_FC_AVICONF0_SCAN_INFO_MASK = 0x30,
++	HDMI_FC_AVICONF0_SCAN_INFO_OVERSCAN = 0x10,
++	HDMI_FC_AVICONF0_SCAN_INFO_UNDERSCAN = 0x20,
++	HDMI_FC_AVICONF0_SCAN_INFO_NODATA = 0x00,
++
++	HDMI_FC_AVICONF1_ACTIVE_ASPECT_RATIO_MASK = 0x0F,
++	HDMI_FC_AVICONF1_ACTIVE_ASPECT_RATIO_USE_CODED = 0x08,
++	HDMI_FC_AVICONF1_ACTIVE_ASPECT_RATIO_4_3 = 0x09,
++	HDMI_FC_AVICONF1_ACTIVE_ASPECT_RATIO_16_9 = 0x0A,
++	HDMI_FC_AVICONF1_ACTIVE_ASPECT_RATIO_14_9 = 0x0B,
++	HDMI_FC_AVICONF1_CODED_ASPECT_RATIO_MASK = 0x30,
++	HDMI_FC_AVICONF1_CODED_ASPECT_RATIO_NO_DATA = 0x00,
++	HDMI_FC_AVICONF1_CODED_ASPECT_RATIO_4_3 = 0x10,
++	HDMI_FC_AVICONF1_CODED_ASPECT_RATIO_16_9 = 0x20,
++	HDMI_FC_AVICONF1_COLORIMETRY_MASK = 0xC0,
++	HDMI_FC_AVICONF1_COLORIMETRY_NO_DATA = 0x00,
++	HDMI_FC_AVICONF1_COLORIMETRY_SMPTE = 0x40,
++	HDMI_FC_AVICONF1_COLORIMETRY_ITUR = 0x80,
++	HDMI_FC_AVICONF1_COLORIMETRY_EXTENDED_INFO = 0xC0,
++
++	HDMI_FC_AVICONF2_SCALING_MASK = 0x03,
++	HDMI_FC_AVICONF2_SCALING_NONE = 0x00,
++	HDMI_FC_AVICONF2_SCALING_HORIZ = 0x01,
++	HDMI_FC_AVICONF2_SCALING_VERT = 0x02,
++	HDMI_FC_AVICONF2_SCALING_HORIZ_VERT = 0x03,
++	HDMI_FC_AVICONF2_RGB_QUANT_MASK = 0x0C,
++	HDMI_FC_AVICONF2_RGB_QUANT_DEFAULT = 0x00,
++	HDMI_FC_AVICONF2_RGB_QUANT_LIMITED_RANGE = 0x04,
++	HDMI_FC_AVICONF2_RGB_QUANT_FULL_RANGE = 0x08,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_MASK = 0x70,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_XVYCC601 = 0x00,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_XVYCC709 = 0x10,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_SYCC601 = 0x20,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_ADOBE_YCC601 = 0x30,
++	HDMI_FC_AVICONF2_EXT_COLORIMETRY_ADOBE_RGB = 0x40,
++	HDMI_FC_AVICONF2_IT_CONTENT_MASK = 0x80,
++	HDMI_FC_AVICONF2_IT_CONTENT_NO_DATA = 0x00,
++	HDMI_FC_AVICONF2_IT_CONTENT_VALID = 0x80,
++
++	HDMI_FC_AVICONF3_IT_CONTENT_TYPE_MASK = 0x03,
++	HDMI_FC_AVICONF3_IT_CONTENT_TYPE_GRAPHICS = 0x00,
++	HDMI_FC_AVICONF3_IT_CONTENT_TYPE_PHOTO = 0x01,
++	HDMI_FC_AVICONF3_IT_CONTENT_TYPE_CINEMA = 0x02,
++	HDMI_FC_AVICONF3_IT_CONTENT_TYPE_GAME = 0x03,
++	HDMI_FC_AVICONF3_QUANT_RANGE_MASK = 0x0C,
++	HDMI_FC_AVICONF3_QUANT_RANGE_LIMITED = 0x00,
++	HDMI_FC_AVICONF3_QUANT_RANGE_FULL = 0x04,
++
++/* FC_DBGFORCE field values */
++	HDMI_FC_DBGFORCE_FORCEAUDIO = 0x10,
++	HDMI_FC_DBGFORCE_FORCEVIDEO = 0x1,
++
++/* PHY_CONF0 field values */
++	HDMI_PHY_CONF0_PDZ_MASK = 0x80,
++	HDMI_PHY_CONF0_PDZ_OFFSET = 7,
++	HDMI_PHY_CONF0_ENTMDS_MASK = 0x40,
++	HDMI_PHY_CONF0_ENTMDS_OFFSET = 6,
++	HDMI_PHY_CONF0_SPARECTRL = 0x20,
++	HDMI_PHY_CONF0_GEN2_PDDQ_MASK = 0x10,
++	HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET = 4,
++	HDMI_PHY_CONF0_GEN2_TXPWRON_MASK = 0x8,
++	HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET = 3,
++	HDMI_PHY_CONF0_GEN2_ENHPDRXSENSE_MASK = 0x4,
++	HDMI_PHY_CONF0_GEN2_ENHPDRXSENSE_OFFSET = 2,
++	HDMI_PHY_CONF0_SELDATAENPOL_MASK = 0x2,
++	HDMI_PHY_CONF0_SELDATAENPOL_OFFSET = 1,
++	HDMI_PHY_CONF0_SELDIPIF_MASK = 0x1,
++	HDMI_PHY_CONF0_SELDIPIF_OFFSET = 0,
++
++/* PHY_TST0 field values */
++	HDMI_PHY_TST0_TSTCLR_MASK = 0x20,
++	HDMI_PHY_TST0_TSTCLR_OFFSET = 5,
++	HDMI_PHY_TST0_TSTEN_MASK = 0x10,
++	HDMI_PHY_TST0_TSTEN_OFFSET = 4,
++	HDMI_PHY_TST0_TSTCLK_MASK = 0x1,
++	HDMI_PHY_TST0_TSTCLK_OFFSET = 0,
++
++/* PHY_STAT0 field values */
++	HDMI_PHY_RX_SENSE3 = 0x80,
++	HDMI_PHY_RX_SENSE2 = 0x40,
++	HDMI_PHY_RX_SENSE1 = 0x20,
++	HDMI_PHY_RX_SENSE0 = 0x10,
++	HDMI_PHY_HPD = 0x02,
++	HDMI_PHY_TX_PHY_LOCK = 0x01,
++
++/* PHY_I2CM_SLAVE_ADDR field values */
++	HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
++	HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
++
++/* PHY_I2CM_OPERATION_ADDR field values */
++	HDMI_PHY_I2CM_OPERATION_ADDR_WRITE = 0x10,
++	HDMI_PHY_I2CM_OPERATION_ADDR_READ = 0x1,
++
++/* HDMI_PHY_I2CM_INT_ADDR */
++	HDMI_PHY_I2CM_INT_ADDR_DONE_POL = 0x08,
++	HDMI_PHY_I2CM_INT_ADDR_DONE_MASK = 0x04,
++
++/* HDMI_PHY_I2CM_CTLINT_ADDR */
++	HDMI_PHY_I2CM_CTLINT_ADDR_NAC_POL = 0x80,
++	HDMI_PHY_I2CM_CTLINT_ADDR_NAC_MASK = 0x40,
++	HDMI_PHY_I2CM_CTLINT_ADDR_ARBITRATION_POL = 0x08,
++	HDMI_PHY_I2CM_CTLINT_ADDR_ARBITRATION_MASK = 0x04,
++
++/* AUD_CTS3 field values */
++	HDMI_AUD_CTS3_N_SHIFT_OFFSET = 5,
++	HDMI_AUD_CTS3_N_SHIFT_MASK = 0xe0,
++	HDMI_AUD_CTS3_N_SHIFT_1 = 0,
++	HDMI_AUD_CTS3_N_SHIFT_16 = 0x20,
++	HDMI_AUD_CTS3_N_SHIFT_32 = 0x40,
++	HDMI_AUD_CTS3_N_SHIFT_64 = 0x60,
++	HDMI_AUD_CTS3_N_SHIFT_128 = 0x80,
++	HDMI_AUD_CTS3_N_SHIFT_256 = 0xa0,
++	/* note that the CTS3 MANUAL bit has been removed
++	   from our part. Can't set it, will read as 0. */
++	HDMI_AUD_CTS3_CTS_MANUAL = 0x10,
++	HDMI_AUD_CTS3_AUDCTS19_16_MASK = 0x0f,
++
++/* AHB_DMA_CONF0 field values */
++	HDMI_AHB_DMA_CONF0_SW_FIFO_RST_OFFSET = 7,
++	HDMI_AHB_DMA_CONF0_SW_FIFO_RST_MASK = 0x80,
++	HDMI_AHB_DMA_CONF0_HBR = 0x10,
++	HDMI_AHB_DMA_CONF0_EN_HLOCK_OFFSET = 3,
++	HDMI_AHB_DMA_CONF0_EN_HLOCK_MASK = 0x08,
++	HDMI_AHB_DMA_CONF0_INCR_TYPE_OFFSET = 1,
++	HDMI_AHB_DMA_CONF0_INCR_TYPE_MASK = 0x06,
++	HDMI_AHB_DMA_CONF0_INCR4 = 0x0,
++	HDMI_AHB_DMA_CONF0_INCR8 = 0x2,
++	HDMI_AHB_DMA_CONF0_INCR16 = 0x4,
++	HDMI_AHB_DMA_CONF0_BURST_MODE = 0x1,
++
++/* HDMI_AHB_DMA_START field values */
++	HDMI_AHB_DMA_START_START_OFFSET = 0,
++	HDMI_AHB_DMA_START_START_MASK = 0x01,
++
++/* HDMI_AHB_DMA_STOP field values */
++	HDMI_AHB_DMA_STOP_STOP_OFFSET = 0,
++	HDMI_AHB_DMA_STOP_STOP_MASK = 0x01,
++
++/* AHB_DMA_STAT, AHB_DMA_INT, AHB_DMA_MASK, AHB_DMA_POL field values */
++	HDMI_AHB_DMA_DONE = 0x80,
++	HDMI_AHB_DMA_RETRY_SPLIT = 0x40,
++	HDMI_AHB_DMA_LOSTOWNERSHIP = 0x20,
++	HDMI_AHB_DMA_ERROR = 0x10,
++	HDMI_AHB_DMA_FIFO_THREMPTY = 0x04,
++	HDMI_AHB_DMA_FIFO_FULL = 0x02,
++	HDMI_AHB_DMA_FIFO_EMPTY = 0x01,
++
++/* AHB_DMA_BUFFSTAT, AHB_DMA_BUFFINT, AHB_DMA_BUFFMASK, AHB_DMA_BUFFPOL field values */
++	HDMI_AHB_DMA_BUFFSTAT_FULL = 0x02,
++	HDMI_AHB_DMA_BUFFSTAT_EMPTY = 0x01,
++
++/* MC_CLKDIS field values */
++	HDMI_MC_CLKDIS_HDCPCLK_DISABLE = 0x40,
++	HDMI_MC_CLKDIS_CECCLK_DISABLE = 0x20,
++	HDMI_MC_CLKDIS_CSCCLK_DISABLE = 0x10,
++	HDMI_MC_CLKDIS_AUDCLK_DISABLE = 0x8,
++	HDMI_MC_CLKDIS_PREPCLK_DISABLE = 0x4,
++	HDMI_MC_CLKDIS_TMDSCLK_DISABLE = 0x2,
++	HDMI_MC_CLKDIS_PIXELCLK_DISABLE = 0x1,
++
++/* MC_SWRSTZ field values */
++	HDMI_MC_SWRSTZ_TMDSSWRST_REQ = 0x02,
++
++/* MC_FLOWCTRL field values */
++	HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_MASK = 0x1,
++	HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH = 0x1,
++	HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS = 0x0,
++
++/* MC_PHYRSTZ field values */
++	HDMI_MC_PHYRSTZ_ASSERT = 0x0,
++	HDMI_MC_PHYRSTZ_DEASSERT = 0x1,
++
++/* MC_HEACPHY_RST field values */
++	HDMI_MC_HEACPHY_RST_ASSERT = 0x1,
++	HDMI_MC_HEACPHY_RST_DEASSERT = 0x0,
++
++/* CSC_CFG field values */
++	HDMI_CSC_CFG_INTMODE_MASK = 0x30,
++	HDMI_CSC_CFG_INTMODE_OFFSET = 4,
++	HDMI_CSC_CFG_INTMODE_DISABLE = 0x00,
++	HDMI_CSC_CFG_INTMODE_CHROMA_INT_FORMULA1 = 0x10,
++	HDMI_CSC_CFG_INTMODE_CHROMA_INT_FORMULA2 = 0x20,
++	HDMI_CSC_CFG_DECMODE_MASK = 0x3,
++	HDMI_CSC_CFG_DECMODE_OFFSET = 0,
++	HDMI_CSC_CFG_DECMODE_DISABLE = 0x0,
++	HDMI_CSC_CFG_DECMODE_CHROMA_INT_FORMULA1 = 0x1,
++	HDMI_CSC_CFG_DECMODE_CHROMA_INT_FORMULA2 = 0x2,
++	HDMI_CSC_CFG_DECMODE_CHROMA_INT_FORMULA3 = 0x3,
++
++/* CSC_SCALE field values */
++	HDMI_CSC_SCALE_CSC_COLORDE_PTH_MASK = 0xF0,
++	HDMI_CSC_SCALE_CSC_COLORDE_PTH_24BPP = 0x00,
++	HDMI_CSC_SCALE_CSC_COLORDE_PTH_30BPP = 0x50,
++	HDMI_CSC_SCALE_CSC_COLORDE_PTH_36BPP = 0x60,
++	HDMI_CSC_SCALE_CSC_COLORDE_PTH_48BPP = 0x70,
++	HDMI_CSC_SCALE_CSCSCALE_MASK = 0x03,
++
++/* I2CM_OPERATION field values */
++	HDMI_I2CM_OPERATION_WRITE = 0x10,
++	HDMI_I2CM_OPERATION_READ_EXT = 0x2,
++	HDMI_I2CM_OPERATION_READ = 0x1,
++
++/* HDMI_I2CM_INT */
++	HDMI_I2CM_INT_DONE_POL = 0x08,
++	HDMI_I2CM_INT_DONE_MASK = 0x04,
++
++/* HDMI_I2CM_CTLINT */
++	HDMI_I2CM_CTLINT_NAC_POL = 0x80,
++	HDMI_I2CM_CTLINT_NAC_MASK = 0x40,
++	HDMI_I2CM_CTLINT_ARBITRATION_POL = 0x08,
++	HDMI_I2CM_CTLINT_ARBITRATION_MASK = 0x04,
++
++};
++
++enum imx_hdmi_type {
++	IMX6DL_HDMI,
++	IMX6Q_HDMI,
++};
++
++/* IOCTL commands */
++#define HDMI_IOC_MAGIC  'H'
++
++#define HDMI_IOC_GET_RESOURCE	_IO(HDMI_IOC_MAGIC, 0)
++#define HDMI_IOC_GET_CPU_TYPE	_IO(HDMI_IOC_MAGIC, 1)
++
++
++#endif /* __MXC_HDMI_H__ */

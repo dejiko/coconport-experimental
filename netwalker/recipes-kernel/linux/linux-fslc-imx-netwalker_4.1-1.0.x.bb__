@@ -1,0 +1,31 @@
+# Copyright (C) 2015, 2016 O.S. Systems Software LTDA.
+# Released under the MIT license (see COPYING.MIT for the terms)
+
+
+include recipes-kernel/linux/linux-fslc.inc
+
+PV .= "+git${SRCPV}"
+
+SRCBRANCH = "4.1-1.0.x-imx"
+SRCREV = "960f493cce161ddc2ba3ffe82c061496e5771829"
+
+COMPATIBLE_MACHINE = "netwalker"
+
+SRC_URI += " \
+            file://makefile-add-netwalker-dts.patch \
+            file://imx51-sharp-netwalker.dts \
+            file://defconfig \
+"
+
+do_configure_prepend() {
+  cp -R ${WORKDIR}/imx51-sharp-netwalker.dts ${S}/arch/arm/boot/dts/
+}
+
+do_compile_append() {
+    oe_runmake dtbs
+
+    # Combine (Adhoc)
+    mv ${S}/arch/arm/boot/zImage ${S}/arch/arm/boot/zImage.org
+    cat ${S}/arch/arm/boot/zImage.org arch/arm/boot/dts/imx51-sharp-netwalker.dts > ${S}/arch/arm/boot/zImage
+}
+

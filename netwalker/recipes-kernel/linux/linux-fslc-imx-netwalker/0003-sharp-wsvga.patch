@@ -1,0 +1,18 @@
+diff --git a/drivers/video/fbdev/mxc/mxc_lcdif.c b/drivers/video/fbdev/mxc/mxc_lcdif.c
+index 59d429c..ed1ff4f 100644
+--- a/drivers/video/fbdev/mxc/mxc_lcdif.c
++++ b/drivers/video/fbdev/mxc/mxc_lcdif.c
+@@ -48,6 +48,13 @@ static struct fb_videomode lcdif_modedb[] = {
+ 	FB_SYNC_CLK_LAT_FALL,
+ 	FB_VMODE_NONINTERLACED,
+ 	0,},
++        {
++        /* 1024x600 @ 50.35 Hz , pixel clk @ 33.25MHz */
++        "SHARP-WSVGA", 50, 1024, 600, 30076, 20, 20, 2, 2, 8, 4,
++        FB_SYNC_CLK_LAT_FALL,
++        FB_VMODE_NONINTERLACED,
++        0,},
++
+ };
+ static int lcdif_modedb_sz = ARRAY_SIZE(lcdif_modedb);
+ 

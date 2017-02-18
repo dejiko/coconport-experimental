@@ -1,0 +1,24 @@
+diff --git a/arch/arm/boot/dts/sun5i-a13-q8-tablet.dts b/arch/arm/boot/dts/sun5i-a13-q8-tablet.dts
+index 72e93ac..fb1a890 100644
+--- a/arch/arm/boot/dts/sun5i-a13-q8-tablet.dts
++++ b/arch/arm/boot/dts/sun5i-a13-q8-tablet.dts
+@@ -58,3 +58,19 @@
+ &usbphy {
+ 	usb1_vbus-supply = <&reg_ldo3>;
+ };
++
++&nfc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&nand_pins_a>, <&nand_cs0_pins_a>, <&nand_rb0_pins_a>;
++	status = "okay";
++
++	nand@0 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		reg = <0>;
++		allwinner,rb = <0>;
++
++
++		nand-ecc-mode = "none";
++	};
++};

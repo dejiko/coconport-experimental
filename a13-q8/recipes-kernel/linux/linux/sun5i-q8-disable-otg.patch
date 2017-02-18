@@ -1,0 +1,42 @@
+diff --git a/arch/arm/boot/dts/sun5i-q8-common.dtsi b/arch/arm/boot/dts/sun5i-q8-common.dtsi
+index a78e189..c696a61 100644
+--- a/arch/arm/boot/dts/sun5i-q8-common.dtsi
++++ b/arch/arm/boot/dts/sun5i-q8-common.dtsi
+@@ -107,20 +107,6 @@
+ 		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+ 	};
+ 
+-	usb0_vbus_detect_pin: usb0_vbus_detect_pin@0 {
+-		allwinner,pins = "PG1";
+-		allwinner,function = "gpio_in";
+-		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+-		allwinner,pull = <SUN4I_PINCTRL_PULL_DOWN>;
+-	};
+-
+-	usb0_id_detect_pin: usb0_id_detect_pin@0 {
+-		allwinner,pins = "PG2";
+-		allwinner,function = "gpio_in";
+-		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+-		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+-	};
+-
+ 	usb0_vbus_pin_a: usb0_vbus_pin@0 {
+ 		allwinner,pins = "PG12";
+ 		allwinner,function = "gpio_out";
+@@ -166,15 +152,11 @@
+ };
+ 
+ &usb_otg {
+-	dr_mode = "otg";
++	dr_mode = "host";
+ 	status = "okay";
+ };
+ 
+ &usbphy {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&usb0_id_detect_pin>, <&usb0_vbus_detect_pin>;
+-	usb0_id_det-gpio = <&pio 6 2 GPIO_ACTIVE_HIGH>; /* PG2 */
+-	usb0_vbus_det-gpio = <&pio 6 1 GPIO_ACTIVE_HIGH>; /* PG1 */
+ 	usb0_vbus-supply = <&reg_usb0_vbus>;
+ 	status = "okay";
+ };

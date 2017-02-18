@@ -1,0 +1,73 @@
+diff --git a/arch/arm/boot/dts/sun5i-a10s.dtsi b/arch/arm/boot/dts/sun5i-a10s.dtsi
+index 367f330..20941aa 100644
+--- a/arch/arm/boot/dts/sun5i-a10s.dtsi
++++ b/arch/arm/boot/dts/sun5i-a10s.dtsi
+@@ -242,6 +242,21 @@
+ 		allwinner,drive = <SUN4I_PINCTRL_30_MA>;
+ 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+ 	};
++
++	nand_cs2_pins_a: nand_cs@2 {
++		allwinner,pins = "PC17";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
++	nand_cs3_pins_a: nand_cs@3 {
++		allwinner,pins = "PC18";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
+ };
+ 
+ &sram_a {
+diff --git a/arch/arm/boot/dts/sun5i-a13.dtsi b/arch/arm/boot/dts/sun5i-a13.dtsi
+index 263d46d..b5c4478 100644
+--- a/arch/arm/boot/dts/sun5i-a13.dtsi
++++ b/arch/arm/boot/dts/sun5i-a13.dtsi
+@@ -250,4 +250,42 @@
+ 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+ 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+ 	};
++
++	nand_pins_a: nand_base0@0 {
++		allwinner,pins = "PC0", "PC1", "PC2",
++				"PC5", "PC8", "PC9", "PC10",
++				"PC11", "PC12", "PC13", "PC14",
++				"PC15";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
++	nand_cs0_pins_a: nand_cs@0 {
++		allwinner,pins = "PC4";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
++	nand_cs1_pins_a: nand_cs@1 {
++		allwinner,pins = "PC3";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
++	nand_rb0_pins_a: nand_rb@0 {
++		allwinner,pins = "PC6";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
++
++	nand_rb1_pins_a: nand_rb@1 {
++		allwinner,pins = "PC7";
++		allwinner,function = "nand0";
++		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
++		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
++	};
+ };
