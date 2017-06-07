@@ -1,0 +1,31 @@
+diff --git a/Makefile b/Makefile
+index cc80e47..cc4a644 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,16 +1,16 @@
+ obj-m += q8-hardwaremgr.o
+ 
+-KBASE  ?= /lib/modules/`uname -r`
+-KBUILD ?= $(KBASE)/build
+-MDEST  ?= $(KBASE)/kernel/drivers/misc
++PWD := $(shell pwd)
++KBUILD ?= $(KERNEL_SRC)
++MDEST  ?= $(INSTALL_MOD_PATH)
++#ccflags-y += -I$(KDIR)
+ 
+ all:
+-	${MAKE} -C $(KBUILD) M=$(PWD) modules
++	$(MAKE) -C $(KERNEL_SRC) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) M=$(PWD) modules
+ 
+ clean:
+-	${MAKE} -C $(KBUILD) M=$(PWD) clean
++	$(MAKE) -C $(KERNEL_SRC) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) M=$(PWD) clean
+ 
+-install:
+-	install -D -m 644 q8-hardwaremgr.ko $(MDEST)
+-	echo "q8-hardwaremgr" > /etc/modules-load.d/q8-hardwaremgr.conf
+-	depmod -a
++modules_install install:
++	$(MAKE) -C $(KERNEL_SRC) ARCH=$(ARCH) M=$(PWD) modules_install INSTALL_MOD_PATH=$(MDEST)
++
++	#echo "q8-hardwaremgr" > /etc/modules-load.d/q8-hardwaremgr.conf
